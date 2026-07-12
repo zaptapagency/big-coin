@@ -6,8 +6,14 @@ explorer page renders without a live chain.
 """
 import time
 
-# A fixed base time so timestamps look sensible and stable.
-_BASE_TIME = 1_752_000_000  # ~ mid 2025
+# Number of blocks in the demo chain (tip height = _NUM_BLOCKS - 1).
+_NUM_BLOCKS = 12
+
+# Anchor the demo chain so its most recent block is ~now. Blocks are 150s
+# (2.5 min) apart, so the tip lands at the current time and older blocks step
+# back from there. This keeps relative times ("2m ago") fresh instead of the
+# whole chain drifting further into the past as real time passes.
+_BASE_TIME = int(time.time()) - (_NUM_BLOCKS - 1) * 150
 
 
 def _h(n: int) -> str:
@@ -112,7 +118,7 @@ def _payment_tx(seed: int, block_hash: str, height: int, confirmations: int,
 def _build():
     """Construct the demo chain. Returns (blocks_by_hash, blocks_by_height,
     height_of_hash, txs_by_id, tip_height, mempool_txids)."""
-    num_blocks = 12
+    num_blocks = _NUM_BLOCKS
     tip_height = num_blocks - 1
 
     blocks_by_hash = {}
