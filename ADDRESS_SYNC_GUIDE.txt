@@ -1,0 +1,237 @@
+================================================================================
+                   MYCOIN — ADDRESS SYNCHRONIZATION GUIDE
+================================================================================
+
+PROBLEM:
+  "Web and Desktop show different addresses after I click Generate New Key"
+
+EXPLANATION:
+  Each time you click "Generate New Key", a NEW address is created.
+  This is CORRECT behavior - wallets have multiple addresses!
+
+  Web Dashboard: Click Generate → Address A created
+  Desktop GUI:   Click Generate → Address B created (different, new key!)
+
+  They're DIFFERENT because they're DIFFERENT keypairs!
+
+================================================================================
+                            SOLUTION: USE SAME ADDRESS
+================================================================================
+
+STEP 1: Generate Address ONCE on Web Dashboard
+  1. Open http://localhost:5000
+  2. Click "Wallet" tab
+  3. Click "Generate New Address"
+  4. You see: 1ABC123xyz...
+  5. COPY THIS ADDRESS
+
+STEP 2: Use SAME Address on Desktop GUI
+  1. Desktop GUI window
+  2. Click "Wallet" tab
+  3. See the address field (if synced, should auto-fill)
+  4. If not auto-filled, PASTE the address you copied
+
+STEP 3: Mine Using SAME Address
+  1. Desktop GUI → "Mining" tab
+  2. Input: Blocks = 5 (or however many)
+  3. Input: Miner Address = paste the address from Step 1
+  4. Click "Start Mining"
+
+RESULT:
+  Both Web and Desktop now mine to THE SAME ADDRESS!
+  Check balance on Web Dashboard → increases as Desktop mines!
+
+================================================================================
+                        VERIFICATION (ADDRESS MATCHING)
+================================================================================
+
+If addresses are synced correctly:
+
+Web Dashboard - Wallet tab:
+  Address: 1ABC123xyz...
+
+Desktop GUI - Wallet tab:
+  Your Address: 1ABC123xyz... (SAME!)
+
+If they match, everything is synced!
+
+================================================================================
+                    STEP-BY-STEP WITH SCREENSHOTS
+================================================================================
+
+SETUP (3 Terminals Running):
+
+Terminal 1 Output:
+  $ python shared_state.py
+  [Shared State Server] Listening on 127.0.0.1:9999
+  [Shared State Server] Node initialized (genesis block created)
+
+Terminal 2 Output:
+  $ python web_app_shared.py
+  Running on http://127.0.0.1:5000
+
+Terminal 3 Output:
+  $ python gui_shared.py
+  [Connected to Shared State Server]
+  (PyQt6 window appears)
+
+---
+
+STEP 1: Web Dashboard (Browser)
+
+http://localhost:5000
+  [Wallet] [Mining] [Blockchain]
+
+Click "Wallet" tab:
+  ┌─────────────────────────────────┐
+  │ Wallet                          │
+  ├─────────────────────────────────┤
+  │                                 │
+  │ Generated Addresses             │
+  │ ---------------------           │
+  │ 1ABC123xyz...                   │
+  │ [Details] [Copy]                │
+  │                                 │
+  │ [Generate New Address]          │
+  └─────────────────────────────────┘
+
+Copy the address: 1ABC123xyz...
+
+---
+
+STEP 2: Desktop GUI (Native Window)
+
+Click "Wallet" tab in PyQt6 window:
+  ┌─────────────────────────────────┐
+  │ Your Address:                   │
+  │ 1ABC123xyz...                   │
+  │ [Generate New Key]              │
+  │                                 │
+  │ Balance: 50 coins               │
+  │ [Check Balance]                 │
+  └─────────────────────────────────┘
+
+(If auto-filled, great! They match!)
+(If not auto-filled, paste from Step 1)
+
+---
+
+STEP 3: Mining
+
+Desktop GUI → "Mining" tab:
+  ┌─────────────────────────────────┐
+  │ Number of Blocks: [5]           │
+  │ Miner Address: 1ABC123xyz...    │
+  │ [Start Mining]                  │
+  └─────────────────────────────────┘
+
+Click "Start Mining"
+  Status: "Mining 5 blocks..."
+  Progress: ████████░░░░░░░░ (4/5)
+
+Mining completes:
+  Status: "Mining complete!"
+
+---
+
+STEP 4: Verify Sync
+
+Web Dashboard → "Blockchain" tab:
+  Height: 5 (increased from 1!)
+  Tip Hash: 0000abc...
+  Total Money: 250 coins (increased from 50!)
+
+Desktop GUI → "Wallet" tab:
+  Balance: 300 coins (includes mining rewards!)
+
+Result: SYNCED! ✓
+
+================================================================================
+                          TROUBLESHOOTING
+================================================================================
+
+Q: Desktop GUI still shows different address after I refresh?
+A: Make sure gui_shared.py is running and shows "Connected to Shared State..."
+   If not connected, shared_state.py isn't running. Start it first!
+
+Q: Desktop GUI window won't open?
+A: Run in Terminal 3: python gui_shared.py
+   Watch for error messages. Common issues:
+   - shared_state.py not running (error: Connection refused on port 9999)
+   - PyQt6 not installed (error: No module named PyQt6)
+
+Q: Web Dashboard and Desktop mine different amounts?
+A: Make sure you're using gui_SHARED.py and web_app_SHARED.py
+   (not gui.py and web_app.py which are standalone)
+
+Q: I generated 3 addresses on Web, but Desktop only shows 1?
+A: Desktop won't auto-populate all of them. Use the latest one!
+   Or check: http://localhost:5000/api/wallet/addresses
+   (shows all addresses generated in shared state)
+
+Q: Restarted everything and addresses still don't match?
+A: Make sure in THIS order:
+   1. Terminal 1: python shared_state.py (wait 2 seconds)
+   2. Terminal 2: python web_app_shared.py (wait 2 seconds)
+   3. Terminal 3: python gui_shared.py
+   Then generate address on Web, use on Desktop.
+
+================================================================================
+                           API ENDPOINTS
+================================================================================
+
+If you want to check addresses programmatically:
+
+Get all generated addresses:
+  curl http://localhost:5000/api/wallet/addresses
+
+Example response:
+  {
+    "status": "success",
+    "addresses": [
+      {"address": "1ABC123xyz...", "pubkey_hash": "def456..."},
+      {"address": "1XYZ789abc...", "pubkey_hash": "ghi789..."}
+    ]
+  }
+
+Generate new address via API:
+  curl http://localhost:5000/api/wallet/new
+
+Example response:
+  {
+    "status": "success",
+    "address": "1NEW456...",
+    "pubkey_hash": "new789..."
+  }
+
+================================================================================
+                            QUICK CHECKLIST
+================================================================================
+
+[ ] shared_state.py running? (port 9999)
+[ ] web_app_shared.py running? (port 5000)
+[ ] gui_shared.py running? (native window open)
+[ ] Generated address on Web Dashboard
+[ ] Copied the address
+[ ] Pasted on Desktop GUI Mining tab
+[ ] Clicked "Start Mining"
+[ ] Refreshed Web Dashboard
+[ ] Height increased? (synced!)
+[ ] Balance increased? (synced!)
+
+If all checked, you're synced! ✓
+
+================================================================================
+                              KEY TAKEAWAY
+================================================================================
+
+Web Dashboard generates Address A
+Desktop GUI uses Address A (same, copied from web)
+Both mine to Address A
+Balance on both shows same total
+
+That's address sync working! ✓
+
+See ADDRESS_SYNC_FIX.md for more details.
+
+================================================================================

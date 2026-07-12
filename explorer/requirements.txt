@@ -1,0 +1,5 @@
+Flask>=2.0
+gunicorn>=21.2
+# requests is optional; the RPC client uses the standard library (urllib) by
+# default. Uncomment if you prefer to extend rpc.py to use requests.
+# requests>=2.25

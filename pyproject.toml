@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mycoin"
+version = "0.1.0"
+description = "MyCoin — an educational cryptocurrency implementing the Bitcoin whitepaper (never holds real funds)."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["ecdsa>=0.19"]
+
+[project.scripts]
+mycoin = "cli:main"
+
+[tool.setuptools]
+# Modules live as flat .py files at the repository root, so list them
+# explicitly rather than relying on package autodiscovery.
+py-modules = [
+    "block",
+    "transaction",
+    "pow",
+    "merkle",
+    "utxo",
+    "node",
+    "network",
+    "wallet",
+    "spv",
+    "calc",
+    "params",
+    "cli",
+    "store",
+    "p2p",
+]
+
+[tool.pytest.ini_options]
+# Confine collection to the tests package so a bare `pytest` never imports
+# GUI launcher scripts at the repo root (e.g. gui_test.py, which calls
+# app.exec() at import time and would otherwise crash collection).
+testpaths = ["tests"]

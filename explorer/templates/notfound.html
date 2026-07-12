@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Not Found — {{ COIN_NAME }} Explorer{% endblock %}
+{% block content %}
+
+<div class="message-card">
+  <div class="message-icon">∅</div>
+  <h1 class="page-title">Not found</h1>
+  <p class="muted">
+    We couldn't find any {{ kind }} matching:
+  </p>
+  <div class="mono query-box">{{ query }}</div>
+  {% if message %}<p class="muted small">Node said: {{ message }}</p>{% endif %}
+  <p>
+    Try a <strong>block height</strong> (integer), a <strong>block hash</strong>,
+    or a <strong>transaction id</strong> (64 hex characters).
+  </p>
+  <a class="btn" href="{{ url_for('index') }}">← Back to home</a>
+</div>
+
+{% endblock %}

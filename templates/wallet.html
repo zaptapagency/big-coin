@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - MyCoin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h1>⛓️ MyCoin Dashboard</h1>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/wallet" class="nav-link active">Wallet</a></li>
+                <li><a href="/mining" class="nav-link">Mining</a></li>
+            </ul>
+            <div class="theme-toggle">
+                <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="hero">
+                <h2>Wallet Management</h2>
+                <p>Generate new addresses and check your balance.</p>
+            </section>
+
+            <!-- Wallet Controls -->
+            <div class="cards-grid">
+                <div class="card card-action">
+                    <div class="card-header">Generate New Address</div>
+                    <div class="card-body">
+                        <p>Create a new keypair and address for receiving coins.</p>
+                        <button id="generateBtn" class="btn btn-primary" onclick="generateNewAddress()">
+                            🔑 Generate Address
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card card-action">
+                    <div class="card-header">Check Balance</div>
+                    <div class="card-body">
+                        <p>View your total balance across all generated addresses.</p>
+                        <button id="balanceBtn" class="btn btn-info" onclick="checkBalance()">
+                            💰 Check Balance
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Coins -->
+            <div class="card card-full">
+                <div class="card-header">Send Coins</div>
+                <div class="card-body">
+                    <p>Send coins from your wallet to another address.</p>
+                    <div class="detail-group">
+                        <label>Recipient Address</label>
+                        <input type="text" id="send-address" class="monospace" placeholder="Enter recipient address">
+                    </div>
+                    <div class="detail-group">
+                        <label>Amount (Coins)</label>
+                        <input type="number" id="send-amount" step="0.00000001" min="0" placeholder="0.00000000">
+                    </div>
+                    <button id="sendBtn" class="btn btn-primary" onclick="sendCoins()">
+                        📤 Send
+                    </button>
+                    <div id="sendStatus" class="send-status"></div>
+                </div>
+            </div>
+
+            <!-- Generated Addresses -->
+            <div class="card card-full">
+                <div class="card-header">Generated Addresses</div>
+                <div class="card-body">
+                    <div id="addressesList" class="addresses-list">
+                        <p class="placeholder">No addresses generated yet. Click "Generate Address" to create one.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Balance Summary -->
+            <div class="card card-full">
+                <div class="card-header">Balance Summary</div>
+                <div class="card-body">
+                    <div class="balance-summary">
+                        <div class="balance-item">
+                            <div class="balance-label">Total Balance (Coins)</div>
+                            <div id="balanceCoins" class="balance-value">--</div>
+                        </div>
+                        <div class="balance-item">
+                            <div class="balance-label">Total Balance (Satoshis)</div>
+                            <div id="balanceSatoshis" class="balance-value">--</div>
+                        </div>
+                        <div class="balance-item">
+                            <div class="balance-label">UTXO Count</div>
+                            <div id="utxoCount" class="balance-value">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mempool (Pending Transactions) -->
+            <div class="card card-full">
+                <div class="card-header">Mempool (Pending Transactions)</div>
+                <div class="card-body">
+                    <div id="mempoolList" class="addresses-list">
+                        <p class="placeholder">No pending transactions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Details Modal -->
+            <div id="addressModal" class="modal hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Address Details</h3>
+                        <button class="close-btn" onclick="closeAddressModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="detail-group">
+                            <label>Base58 Address</label>
+                            <code id="modalAddress" class="monospace">Loading...</code>
+                            <button class="btn btn-small" onclick="copyToClipboard('modalAddress')">📋 Copy</button>
+                        </div>
+                        <div class="detail-group">
+                            <label>Public Key Hash</label>
+                            <code id="modalPKH" class="monospace">Loading...</code>
+                            <button class="btn btn-small" onclick="copyToClipboard('modalPKH')">📋 Copy</button>
+                        </div>
+                        <div class="detail-group">
+                            <label>Public Key (SECP256k1)</label>
+                            <code id="modalPubkey" class="monospace">Loading...</code>
+                            <button class="btn btn-small" onclick="copyToClipboard('modalPubkey')">📋 Copy</button>
+                        </div>
+                        <div class="qr-placeholder">
+                            <p>QR Code generation coming soon</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessage" class="status-message hidden"></div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize theme
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (localStorage.getItem('theme') === 'dark' || (prefersDark && !localStorage.getItem('theme'))) {
+            htmlElement.setAttribute('data-theme', 'dark');
+            themeToggle.textContent = '☀️ Light Mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+
+        // Store generated addresses in session
+        let generatedAddresses = JSON.parse(sessionStorage.getItem('addresses') || '[]');
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.classList.remove('hidden');
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 4000);
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('Copied to clipboard!', 'success');
+            }).catch(() => {
+                showStatus('Failed to copy', 'error');
+            });
+        }
+
+        async function generateNewAddress() {
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating...';
+
+            try {
+                const response = await fetch('/api/wallet/new');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const addressData = {
+                        address: data.address,
+                        pubkey_hash: data.pubkey_hash,
+                        pubkey: data.pubkey,
+                    };
+                    generatedAddresses.unshift(addressData);
+                    sessionStorage.setItem('addresses', JSON.stringify(generatedAddresses));
+
+                    renderAddresses();
+                    showStatus('✓ Address generated successfully', 'success');
+
+                    // Show details in modal
+                    showAddressDetails(addressData);
+                } else {
+                    showStatus('Error: ' + (data.message || 'Failed to generate address'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Network error: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔑 Generate Address';
+            }
+        }
+
+        async function checkBalance() {
+            const btn = document.getElementById('balanceBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Checking...';
+
+            try {
+                const response = await fetch('/api/wallet/balance');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    document.getElementById('balanceCoins').textContent =
+                        `${data.balance_coins} MC`;
+                    document.getElementById('balanceSatoshis').textContent =
+                        `${data.balance_satoshis} satoshis`;
+                    document.getElementById('utxoCount').textContent =
+                        `${data.utxo_count} UTXOs`;
+                    showStatus('✓ Balance updated', 'success');
+                } else {
+                    showStatus('Error: ' + (data.message || 'Failed to check balance'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Network error: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '💰 Check Balance';
+            }
+        }
+
+        async function sendCoins() {
+            const btn = document.getElementById('sendBtn');
+            const statusEl = document.getElementById('sendStatus');
+            const toAddress = document.getElementById('send-address').value.trim();
+            const amount = document.getElementById('send-amount').value;
+
+            if (!toAddress || amount === '') {
+                statusEl.textContent = 'Recipient address and amount are required.';
+                statusEl.className = 'send-status error';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
+            statusEl.textContent = '';
+            statusEl.className = 'send-status';
+
+            try {
+                const response = await fetch('/api/wallet/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to_address: toAddress, amount: parseFloat(amount) }),
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    statusEl.textContent = '✓ Sent! txid: ' + data.txid;
+                    statusEl.className = 'send-status success';
+                    showStatus('✓ Transaction sent', 'success');
+                    document.getElementById('send-address').value = '';
+                    document.getElementById('send-amount').value = '';
+                    loadMempool();
+                } else {
+                    statusEl.textContent = 'Error: ' + (data.message || 'Failed to send');
+                    statusEl.className = 'send-status error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusEl.textContent = 'Network error: ' + error.message;
+                statusEl.className = 'send-status error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📤 Send';
+            }
+        }
+
+        async function loadMempool() {
+            try {
+                const response = await fetch('/api/mempool');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    renderMempool(data.transactions || []);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderMempool(transactions) {
+            const listEl = document.getElementById('mempoolList');
+            if (transactions.length === 0) {
+                listEl.innerHTML = '<p class="placeholder">No pending transactions.</p>';
+                return;
+            }
+
+            const html = transactions.map((tx) => `
+                <div class="address-item">
+                    <div class="address-info">
+                        <code class="address-value">${tx.txid.slice(0, 16)}...</code>
+                    </div>
+                    <div class="mempool-meta">
+                        Inputs: ${tx.inputs} | Outputs: ${tx.outputs} | Total: ${tx.total_out_cents / 100000000} MC
+                    </div>
+                </div>
+            `).join('');
+
+            listEl.innerHTML = html;
+        }
+
+        function renderAddresses() {
+            const listEl = document.getElementById('addressesList');
+            if (generatedAddresses.length === 0) {
+                listEl.innerHTML = '<p class="placeholder">No addresses generated yet.</p>';
+                return;
+            }
+
+            const html = generatedAddresses.map((addr, idx) => `
+                <div class="address-item">
+                    <div class="address-info">
+                        <div class="address-number">#${idx + 1}</div>
+                        <code class="address-value">${addr.address}</code>
+                    </div>
+                    <button class="btn btn-small" onclick="showAddressDetails(${JSON.stringify(addr).replace(/"/g, '&quot;')})">
+                        📋 Details
+                    </button>
+                </div>
+            `).join('');
+
+            listEl.innerHTML = html;
+        }
+
+        function showAddressDetails(addressData) {
+            document.getElementById('modalAddress').textContent = addressData.address;
+            document.getElementById('modalPKH').textContent = addressData.pubkey_hash;
+            document.getElementById('modalPubkey').textContent = addressData.pubkey;
+            document.getElementById('addressModal').classList.remove('hidden');
+        }
+
+        function closeAddressModal() {
+            document.getElementById('addressModal').classList.add('hidden');
+        }
+
+        // Load addresses on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAddresses();
+            loadMempool();
+            setInterval(loadMempool, 4000);
+        });
+
+        // Close modal on outside click
+        document.getElementById('addressModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addressModal') {
+                closeAddressModal();
+            }
+        });
+    </script>
+</body>
+</html>

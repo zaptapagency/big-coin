@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Transaction — {{ COIN_NAME }} Explorer{% endblock %}
+{% block content %}
+
+<div class="crumbs"><a href="{{ url_for('index') }}">Home</a> / Transaction</div>
+
+<h1 class="page-title">Transaction</h1>
+<div class="mono txid-head">{{ tx.txid }}</div>
+
+<div class="detail-card">
+  <dl class="kv">
+    <dt>Status</dt>
+    <dd>
+      {% if tx.confirmations and tx.confirmations > 0 %}
+        <span class="badge ok">Confirmed</span> {{ '{:,}'.format(tx.confirmations) }} confirmations
+      {% else %}
+        <span class="badge pending">Unconfirmed (mempool)</span>
+      {% endif %}
+    </dd>
+    {% if tx.blockhash %}
+    <dt>Block</dt>
+    <dd class="mono"><a href="{{ url_for('block', hash_or_height=tx.blockhash) }}">{{ tx.blockhash }}</a></dd>
+    {% endif %}
+    {% if tx.time %}<dt>Timestamp</dt><dd>{{ tx.time|ts }} <span class="muted">({{ tx.time|since }})</span></dd>{% endif %}
+    <dt>Size</dt><dd>{{ tx.size }} bytes{% if tx.vsize is defined %} · {{ tx.vsize }} vbytes{% endif %}</dd>
+    {% if tx.weight is defined %}<dt>Weight</dt><dd>{{ tx.weight }} WU</dd>{% endif %}
+    <dt>Version</dt><dd class="mono">{{ tx.version }}</dd>
+    <dt>Locktime</dt><dd class="mono">{{ tx.locktime }}</dd>
+    <dt>Total Output</dt><dd class="amount">{{ total_out|coin }} {{ COIN_TICKER }}</dd>
+    {% if fee is not none %}<dt>Fee</dt><dd class="amount">{{ fee|coin }} {{ COIN_TICKER }}</dd>{% endif %}
+  </dl>
+</div>
+
+<div class="io-grid">
+  <div>
+    <h2 class="section-title">Inputs ({{ inputs|length }})</h2>
+    <div class="io-list">
+      {% for i in inputs %}
+      <div class="io-row">
+        <div class="io-addr mono">{{ i.address }}</div>
+        <div class="io-val">
+          {% if i.coinbase %}<span class="tag">newly generated</span>
+          {% elif i.value is not none %}{{ i.value|coin }} {{ COIN_TICKER }}
+          {% else %}<span class="muted">unknown</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if total_in is not none %}
+    <div class="io-total">Total in: {{ total_in|coin }} {{ COIN_TICKER }}</div>
+    {% endif %}
+  </div>
+
+  <div class="io-arrow">→</div>
+
+  <div>
+    <h2 class="section-title">Outputs ({{ outputs|length }})</h2>
+    <div class="io-list">
+      {% for o in outputs %}
+      <div class="io-row">
+        <div class="io-addr mono">#{{ o.n }} · {{ o.address }}</div>
+        <div class="io-val">{{ o.value|coin }} {{ COIN_TICKER }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="io-total">Total out: {{ total_out|coin }} {{ COIN_TICKER }}</div>
+  </div>
+</div>
+
+{% endblock %}

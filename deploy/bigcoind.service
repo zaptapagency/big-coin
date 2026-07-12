@@ -1,0 +1,33 @@
+[Unit]
+Description=BigCoin Core daemon (seed node)
+Documentation=https://github.com/bigcoin-project/bigcoin
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=bigcoin
+Group=bigcoin
+
+# Adjust paths if you install elsewhere.
+ExecStart=/usr/local/bin/bigcoind -daemon -pid=/run/bigcoind/bigcoind.pid \
+          -conf=/etc/bigcoin/bigcoin.conf -datadir=/var/lib/bigcoin
+ExecStop=/usr/local/bin/bigcoin-cli -conf=/etc/bigcoin/bigcoin.conf stop
+
+PIDFile=/run/bigcoind/bigcoind.pid
+RuntimeDirectory=bigcoind
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=120
+TimeoutStartSec=60
+
+# --- Hardening ---
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/bigcoin
+MemoryDenyWriteExecute=false
+
+[Install]
+WantedBy=multi-user.target

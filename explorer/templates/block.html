@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Block {{ block.height }} — {{ COIN_NAME }} Explorer{% endblock %}
+{% block content %}
+
+<div class="crumbs"><a href="{{ url_for('index') }}">Home</a> / Block #{{ '{:,}'.format(block.height) }}</div>
+
+<h1 class="page-title">Block <span class="mono">#{{ '{:,}'.format(block.height) }}</span></h1>
+
+<div class="nav-blocks">
+  {% if block.previousblockhash %}
+  <a class="btn" href="{{ url_for('block', hash_or_height=block.previousblockhash) }}">← Prev</a>
+  {% endif %}
+  {% if block.nextblockhash %}
+  <a class="btn" href="{{ url_for('block', hash_or_height=block.nextblockhash) }}">Next →</a>
+  {% endif %}
+</div>
+
+<div class="detail-card">
+  <dl class="kv">
+    <dt>Hash</dt><dd class="mono">{{ block.hash }}</dd>
+    <dt>Confirmations</dt><dd>{{ '{:,}'.format(block.confirmations) if block.confirmations is defined else '-' }}</dd>
+    <dt>Timestamp</dt><dd>{{ block.time|ts }} <span class="muted">({{ block.time|since }})</span></dd>
+    <dt>Transactions</dt><dd>{{ block.nTx if block.nTx is defined else (block.tx|length) }}</dd>
+    <dt>Size</dt><dd>{{ block.size|bytes }} ({{ '{:,}'.format(block.size) }} bytes)</dd>
+    {% if block.weight is defined %}<dt>Weight</dt><dd>{{ '{:,}'.format(block.weight) }} WU</dd>{% endif %}
+    <dt>Difficulty</dt><dd>{{ '{:,.6f}'.format(block.difficulty|float) }}</dd>
+    <dt>Merkle Root</dt><dd class="mono">{{ block.merkleroot }}</dd>
+    <dt>Nonce</dt><dd class="mono">{{ block.nonce }}</dd>
+    <dt>Bits</dt><dd class="mono">{{ block.bits }}</dd>
+    <dt>Version</dt><dd class="mono">{{ block.versionHex if block.versionHex is defined else block.version }}</dd>
+    {% if block.previousblockhash %}
+    <dt>Previous Block</dt>
+    <dd class="mono"><a href="{{ url_for('block', hash_or_height=block.previousblockhash) }}">{{ block.previousblockhash }}</a></dd>
+    {% endif %}
+    {% if block.nextblockhash %}
+    <dt>Next Block</dt>
+    <dd class="mono"><a href="{{ url_for('block', hash_or_height=block.nextblockhash) }}">{{ block.nextblockhash }}</a></dd>
+    {% endif %}
+    {% if block.chainwork %}<dt>Chainwork</dt><dd class="mono small">{{ block.chainwork }}</dd>{% endif %}
+  </dl>
+</div>
+
+<h2 class="section-title">Transactions ({{ block.tx|length }})</h2>
+<div class="table-wrap">
+<table class="data-table">
+  <thead><tr><th class="num">#</th><th>Transaction ID</th></tr></thead>
+  <tbody>
+    {% for txid in block.tx %}
+    <tr>
+      <td class="num">{{ loop.index0 }}{% if loop.first %} <span class="tag">coinbase</span>{% endif %}</td>
+      <td class="mono"><a href="{{ url_for('tx', txid=txid) }}">{{ txid }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% endblock %}

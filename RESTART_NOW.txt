@@ -1,0 +1,64 @@
+================================================================================
+                    MINING FIX - RESTART SERVERS NOW
+================================================================================
+
+The fix is in the code. The problem: Old Python processes are running old bytecode.
+
+SOLUTION: Run this command in PowerShell to automatically restart everything:
+
+    powershell -ExecutionPolicy Bypass -File "C:\Users\usman\Desktop\BigCoinBB\FULL_AUTO_RESTART.ps1"
+
+This will:
+  ✓ Kill all Python processes
+  ✓ Clear Python cache (__pycache__ folders)
+  ✓ Delete .pyc compiled files
+  ✓ Start shared_state.py in new terminal
+  ✓ Start web_app_shared.py in new terminal
+  ✓ Show you the status
+
+================================================================================
+
+ALTERNATIVE (Manual Restart):
+
+If PowerShell doesn't work, use CLEAN_RESTART.bat instead:
+  1. Right-click CLEAN_RESTART.bat
+  2. Choose "Run as administrator"
+  3. Follow the on-screen instructions
+
+================================================================================
+
+WHAT HAPPENS NEXT:
+
+After running the restart script:
+  1. Two new terminals will open
+  2. Terminal 1 should show:
+     "[Shared State Server] Listening on 127.0.0.1:9999"
+  3. Terminal 2 should show:
+     "Running on http://127.0.0.1:5000"
+  4. Refresh your browser: http://localhost:5000
+  5. Go to Wallet tab → "Generate New Address" (MUST be NEW)
+  6. Go to Mining tab → Paste address → "Start Mining"
+
+Expected result:
+  ✓ Progress bar updates every 500ms
+  ✓ No errors
+  ✓ Mining completes successfully
+
+================================================================================
+
+WHY THIS HAPPENED:
+
+1. I fixed the address lookup bug in shared_state.py
+2. The code changes were saved to disk
+3. But the running Python process kept using OLD compiled bytecode
+4. Python's bytecode cache (.pyc files) persists until the process is killed
+5. Solution: Kill the process and delete the cache to force reload
+
+The FIX is already in the code:
+  ✓ shared_state.py lines 119-125: Correct address lookup
+  ✓ mining.html line 217: Correct status check
+  ✓ web_app_shared.py: Has all fixes
+
+You just need to restart to activate them.
+
+================================================================================

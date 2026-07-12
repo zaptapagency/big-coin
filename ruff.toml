@@ -1,0 +1,27 @@
+target-version = "py311"
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+
+# The following pre-existing rule violations cannot be fixed without editing the
+# source modules (out of scope for the CI tooling change), so they are ignored:
+#   I001  - unsorted imports (formatting nit across modules)
+#   F401  - unused imports (intentional re-exports / educational stubs)
+#   UP035 - deprecated typing imports (typing.Iterable, etc.)
+#   UP037 - quoted annotations
+#   UP045 - non-PEP604 Optional annotations
+#   B904  - raise without `from` inside except
+#   B905  - zip without explicit strict=
+ignore = [
+    "I001",
+    "F401",
+    "UP035",
+    "UP037",
+    "UP045",
+    "B904",
+    "B905",
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["E501", "F401", "F841", "B011"]

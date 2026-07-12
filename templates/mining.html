@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mining - MyCoin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h1>⛓️ MyCoin Dashboard</h1>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/wallet" class="nav-link">Wallet</a></li>
+                <li><a href="/mining" class="nav-link active">Mining</a></li>
+            </ul>
+            <div class="theme-toggle">
+                <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="hero">
+                <h2>Mining</h2>
+                <p>Mine blocks and earn coinbase rewards to your address.</p>
+            </section>
+
+            <!-- Mining Controls -->
+            <div class="card card-full">
+                <div class="card-header">Mining Configuration</div>
+                <div class="card-body">
+                    <form id="miningForm" class="mining-form">
+                        <div class="form-group">
+                            <label for="blocksInput">Number of Blocks to Mine</label>
+                            <input
+                                type="number"
+                                id="blocksInput"
+                                name="blocks"
+                                min="1"
+                                max="100"
+                                value="1"
+                                class="form-input"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="addressInput">Miner Address (Base58)</label>
+                            <input
+                                type="text"
+                                id="addressInput"
+                                name="address"
+                                placeholder="Enter your mining address..."
+                                class="form-input"
+                            >
+                            <small>Don't have an address? <a href="/wallet" class="link">Generate one</a></small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" id="startBtn" class="btn btn-success btn-large">
+                                ⚒️ Start Mining
+                            </button>
+                            <button type="button" id="stopBtn" class="btn btn-danger btn-large hidden" onclick="stopMining()">
+                                ⏹️ Stop Mining
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Mining Progress -->
+            <div id="progressSection" class="card card-full hidden">
+                <div class="card-header">Mining Progress</div>
+                <div class="card-body">
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Blocks Mined</span>
+                            <span><span id="blocksMined">0</span> / <span id="totalBlocks">0</span></span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="progressBarFill" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mining-stats">
+                        <div class="stat">
+                            <div class="stat-label">Current Height</div>
+                            <div id="currentHeight" class="stat-value">--</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Current Block Hash</div>
+                            <code id="currentHash" class="stat-value monospace">--</code>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Elapsed Time</div>
+                            <div id="elapsedTime" class="stat-value">0s</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mining Status Display -->
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">Mining Status</div>
+                    <div class="card-body">
+                        <div id="miningStatusDisplay" class="card-value">Idle</div>
+                        <div class="card-subtitle">Current state</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Chain Height</div>
+                    <div class="card-body">
+                        <div id="chainHeightDisplay" class="card-value">--</div>
+                        <div class="card-subtitle">Latest block height</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Blocks This Session</div>
+                    <div class="card-body">
+                        <div id="sessionBlocksDisplay" class="card-value">0</div>
+                        <div class="card-subtitle">Total mined</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Information Box -->
+            <div class="card card-full">
+                <div class="card-header">ℹ️ Mining Information</div>
+                <div class="card-body">
+                    <ul class="info-list">
+                        <li>Mining uses Proof-of-Work consensus to secure the blockchain</li>
+                        <li>Each successfully mined block earns a coinbase reward to your address</li>
+                        <li>The difficulty adjusts automatically based on block times</li>
+                        <li>You can stop mining at any time using the "Stop Mining" button</li>
+                        <li>Mining progress updates in real-time on this page</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessage" class="status-message hidden"></div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize theme
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (localStorage.getItem('theme') === 'dark' || (prefersDark && !localStorage.getItem('theme'))) {
+            htmlElement.setAttribute('data-theme', 'dark');
+            themeToggle.textContent = '☀️ Light Mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+
+        let isMining = false;
+        let startTime = 0;
+        let statusCheckInterval = null;
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message ${type}`;
+            statusEl.classList.remove('hidden');
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 5000);
+        }
+
+        async function startMining(event) {
+            event.preventDefault();
+
+            const blocksInput = document.getElementById('blocksInput').value;
+            const addressInput = document.getElementById('addressInput').value;
+
+            if (!blocksInput || blocksInput < 1) {
+                showStatus('Please enter a valid number of blocks', 'error');
+                return;
+            }
+
+            if (!addressInput) {
+                showStatus('Please enter your mining address', 'error');
+                return;
+            }
+
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = true;
+            startBtn.textContent = '⏳ Starting...';
+
+            try {
+                const response = await fetch('/api/mining/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        blocks: parseInt(blocksInput),
+                        address: addressInput,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    isMining = true;
+                    startTime = Date.now();
+                    document.getElementById('miningForm').style.display = 'none';
+                    document.getElementById('progressSection').classList.remove('hidden');
+                    document.getElementById('startBtn').classList.add('hidden');
+                    document.getElementById('stopBtn').classList.remove('hidden');
+                    document.getElementById('totalBlocks').textContent = data.blocks_to_mine;
+
+                    showStatus('✓ Mining started', 'success');
+
+                    // Poll for mining status every 500ms
+                    statusCheckInterval = setInterval(pollMiningStatus, 500);
+                } else {
+                    showStatus('Error: ' + (data.message || 'Failed to start mining'), 'error');
+                    startBtn.disabled = false;
+                    startBtn.textContent = '⚒️ Start Mining';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('Network error: ' + error.message, 'error');
+                startBtn.disabled = false;
+                startBtn.textContent = '⚒️ Start Mining';
+            }
+        }
+
+        async function pollMiningStatus() {
+            try {
+                const response = await fetch('/api/mining/status');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const blocksMined = data.blocks_mined;
+                    const totalBlocks = data.blocks_to_mine;
+                    const currentHeight = data.current_height;
+
+                    // Update progress bar
+                    const progress = totalBlocks > 0 ? (blocksMined / totalBlocks) * 100 : 0;
+                    document.getElementById('progressBarFill').style.width = progress + '%';
+                    document.getElementById('blocksMined').textContent = blocksMined;
+                    document.getElementById('currentHeight').textContent = currentHeight;
+                    document.getElementById('chainHeightDisplay').textContent = currentHeight;
+                    document.getElementById('sessionBlocksDisplay').textContent = blocksMined;
+
+                    // Update elapsed time
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                    document.getElementById('elapsedTime').textContent = timeStr;
+
+                    // Check if mining is complete
+                    if (!data.is_mining || blocksMined >= totalBlocks) {
+                        stopMiningUI();
+                    } else {
+                        document.getElementById('miningStatusDisplay').textContent = 'Mining...';
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling status:', error);
+            }
+        }
+
+        async function stopMining() {
+            try {
+                const response = await fetch('/api/mining/stop');
+                const data = await response.json();
+
+                if (data.status === 'stopped') {
+                    stopMiningUI();
+                    showStatus('✓ Mining stopped', 'success');
+                }
+            } catch (error) {
+                console.error('Error stopping mining:', error);
+                showStatus('Error stopping mining', 'error');
+            }
+        }
+
+        function stopMiningUI() {
+            isMining = false;
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+
+            document.getElementById('miningStatusDisplay').textContent = 'Idle';
+            document.getElementById('progressSection').classList.add('hidden');
+            document.getElementById('miningForm').style.display = 'block';
+            document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.add('hidden');
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').textContent = '⚒️ Start Mining';
+        }
+
+        // Populate address field if available from wallet
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedAddresses = JSON.parse(sessionStorage.getItem('addresses') || '[]');
+            if (savedAddresses.length > 0) {
+                document.getElementById('addressInput').value = savedAddresses[0].address;
+            }
+
+            // Poll blockchain info in background
+            setInterval(() => {
+                if (!isMining) {
+                    fetch('/api/blockchain/info')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                document.getElementById('chainHeightDisplay').textContent = data.height;
+                            }
+                        })
+                        .catch(e => console.error('Error:', e));
+                }
+            }, 2000);
+        });
+
+        // Handle form submission
+        document.getElementById('miningForm').addEventListener('submit', startMining);
+    </script>
+</body>
+</html>

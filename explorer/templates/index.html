@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ COIN_NAME }} Explorer — Home{% endblock %}
+{% block content %}
+
+<section class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Chain</div>
+    <div class="stat-value">{{ summary.chain }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Block Height</div>
+    <div class="stat-value">{{ '{:,}'.format(summary.blocks) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Difficulty</div>
+    <div class="stat-value">{{ '{:,.4f}'.format(summary.difficulty|float) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Mempool</div>
+    <div class="stat-value">{{ '{:,}'.format(summary.mempool_size) }} tx</div>
+    <div class="stat-foot">{{ summary.mempool_bytes|bytes }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Connections</div>
+    <div class="stat-value">{{ summary.connections }}</div>
+    {% if summary.subversion %}<div class="stat-foot mono">{{ summary.subversion }}</div>{% endif %}
+  </div>
+  <div class="stat-card wide">
+    <div class="stat-label">Best Block Hash</div>
+    <div class="stat-value mono small">
+      <a href="{{ url_for('block', hash_or_height=summary.bestblockhash) }}">{{ summary.bestblockhash }}</a>
+    </div>
+  </div>
+</section>
+
+<h2 class="section-title">Latest Blocks</h2>
+<div class="table-wrap">
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Height</th>
+      <th>Hash</th>
+      <th>Time</th>
+      <th class="num">Txs</th>
+      <th class="num">Size</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for b in blocks %}
+    <tr>
+      <td><a class="pill" href="{{ url_for('block', hash_or_height=b.height) }}">{{ '{:,}'.format(b.height) }}</a></td>
+      <td class="mono"><a href="{{ url_for('block', hash_or_height=b.hash) }}">{{ b.hash|short }}</a></td>
+      <td title="{{ b.time|ts }}">{{ b.time|ts }} <span class="muted">({{ b.time|since }})</span></td>
+      <td class="num">{{ b.nTx if b.nTx is defined else (b.tx|length) }}</td>
+      <td class="num">{{ b.size|bytes }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">No blocks available.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% endblock %}

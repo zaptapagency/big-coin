@@ -1,0 +1,28 @@
+# BigCoin node configuration (rename to bigcoin.conf, place in the data directory)
+# Data dir default: Linux ~/.bigcoin  |  Windows %APPDATA%\BigCoin
+
+# --- RPC (used by wallet, explorer, mining pool) ---
+server=1
+rpcuser=CHANGE_ME_user
+rpcpassword=CHANGE_ME_long_random_password
+# Only bind RPC to localhost unless you know what you're doing:
+rpcbind=127.0.0.1
+rpcallowip=127.0.0.1
+rpcport=9445
+
+# --- P2P network ---
+port=9444
+listen=1
+# Add known seed nodes here as the network grows:
+# addnode=SEED_NODE_IP_1
+# addnode=SEED_NODE_IP_2
+
+# --- Node behaviour ---
+txindex=1          # required by block explorers (full tx lookup)
+daemon=1           # run in background (Linux/macOS)
+
+# --- Testnet toggle (uncomment to run on testnet instead of mainnet) ---
+# testnet=1
+# [test]
+# rpcport=19555
+# port=19555

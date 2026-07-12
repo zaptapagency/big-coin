@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ COIN_NAME }} Explorer{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-mark">◈</span>
+        <span class="brand-name">{{ COIN_NAME }}</span>
+        <span class="brand-ticker">{{ COIN_TICKER }}</span>
+        <span class="brand-sub">Explorer</span>
+      </a>
+      <form class="search" action="{{ url_for('search') }}" method="get" role="search">
+        <input type="text" name="q" placeholder="Search block height, block hash, or txid…"
+               autocomplete="off" spellcheck="false" value="">
+        <button type="submit">Search</button>
+      </form>
+    </div>
+  </header>
+
+  {% if demo %}
+  <div class="demo-banner wrap-full">
+    <div class="wrap">
+      <strong>DEMO MODE</strong> — showing sample data.
+      {% if demo_reason %}<span class="demo-reason">{{ demo_reason }}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <main class="wrap content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      {{ COIN_NAME }} ({{ COIN_TICKER }}) block explorer · Bitcoin/Litecoin-Core JSON-RPC
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyCoin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h1>⛓️ MyCoin Dashboard</h1>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="/" class="nav-link active">Dashboard</a></li>
+                <li><a href="/wallet" class="nav-link">Wallet</a></li>
+                <li><a href="/mining" class="nav-link">Mining</a></li>
+            </ul>
+            <div class="theme-toggle">
+                <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="hero">
+                <h2>Welcome to MyCoin</h2>
+                <p>An educational blockchain implementation. This network never holds real funds.</p>
+            </section>
+
+            <!-- Blockchain Info Cards -->
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">Chain Height</div>
+                    <div class="card-body">
+                        <div id="chainHeight" class="card-value">Loading...</div>
+                        <div class="card-subtitle">Current block height</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Total Money</div>
+                    <div class="card-body">
+                        <div id="totalMoney" class="card-value">Loading...</div>
+                        <div class="card-subtitle">All coins in circulation</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Transaction Count</div>
+                    <div class="card-body">
+                        <div id="txCount" class="card-value">Loading...</div>
+                        <div class="card-subtitle">Total transactions confirmed</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Mempool Size</div>
+                    <div class="card-body">
+                        <div id="mempoolSize" class="card-value">Loading...</div>
+                        <div class="card-subtitle">Pending transactions</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tip Hash Section -->
+            <div class="card card-full">
+                <div class="card-header">Tip Hash (Most Recent Block)</div>
+                <div class="card-body">
+                    <code id="tipHash" class="monospace">Loading...</code>
+                    <button id="refreshBtn" class="btn btn-secondary" onclick="refreshBlockchainInfo()">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card card-full">
+                <div class="card-header">Recent Transactions</div>
+                <div class="card-body">
+                    <div id="transactionsList" class="tx-list">
+                        <p>Loading transactions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="quick-links">
+                <a href="/wallet" class="btn btn-primary">💰 Manage Wallet</a>
+                <a href="/mining" class="btn btn-success">⚒️ Start Mining</a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize theme
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (localStorage.getItem('theme') === 'dark' || (prefersDark && !localStorage.getItem('theme'))) {
+            htmlElement.setAttribute('data-theme', 'dark');
+            themeToggle.textContent = '☀️ Light Mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+
+        // Fetch and display blockchain info
+        async function refreshBlockchainInfo() {
+            try {
+                const response = await fetch('/api/blockchain/info');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    document.getElementById('chainHeight').textContent = data.height;
+                    document.getElementById('totalMoney').textContent =
+                        `${data.total_money_coins} MC (${data.total_money_satoshis} satoshis)`;
+                    document.getElementById('txCount').textContent = data.tx_count;
+                    document.getElementById('mempoolSize').textContent = data.mempool_size;
+                    document.getElementById('tipHash').textContent = data.tip_hash;
+                }
+            } catch (error) {
+                console.error('Error fetching blockchain info:', error);
+            }
+        }
+
+        // Fetch and display recent transactions
+        async function loadTransactions() {
+            try {
+                const response = await fetch('/api/transactions');
+                const data = await response.json();
+
+                if (data.status === 'success' && data.transactions.length > 0) {
+                    const listHtml = data.transactions.map(tx => `
+                        <div class="tx-item">
+                            <div class="tx-info">
+                                <div class="tx-id"><code>${tx.txid.substring(0, 16)}...</code></div>
+                                <div class="tx-meta">
+                                    <span class="tx-status ${tx.status}">${tx.status}</span>
+                                    <span class="tx-detail">${tx.inputs} inputs → ${tx.outputs} outputs</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('transactionsList').innerHTML = listHtml;
+                } else {
+                    document.getElementById('transactionsList').innerHTML =
+                        '<p>No transactions yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+            }
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshBlockchainInfo();
+            loadTransactions();
+            // Auto-refresh every 3 seconds
+            setInterval(refreshBlockchainInfo, 3000);
+            setInterval(loadTransactions, 5000);
+        });
+    </script>
+</body>
+</html>

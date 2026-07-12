@@ -1,0 +1,123 @@
+================================================================================
+                    MINING FIX — READ THIS FIRST!
+================================================================================
+
+ISSUE: Web Dashboard mining shows "Failed to start mining" error
+
+CAUSE: shared_state.py server was running old code
+
+SOLUTION: RESTART EVERYTHING
+
+================================================================================
+                         STEP-BY-STEP FIX
+================================================================================
+
+1. KILL ALL SERVERS
+   - Close all 3 terminals (or Ctrl+C each one)
+   - Wait 5 seconds to make sure they're stopped
+
+2. START FRESH (in this order)
+
+   Terminal 1:
+   -----------
+   cd C:\Users\usman\Desktop\BigCoinBB
+   python shared_state.py
+
+   Wait for output: "[Shared State Server] Listening on 127.0.0.1:9999"
+
+   Terminal 2:
+   -----------
+   cd C:\Users\usman\Desktop\BigCoinBB
+   python web_app_shared.py
+
+   Wait for output: "Running on http://127.0.0.1:5000"
+
+3. TEST IN BROWSER
+   - Open: http://localhost:5000
+   - Go to Wallet tab
+   - Click "Generate New Address"
+   - Copy the address
+
+4. TRY MINING
+   - Go to Mining tab
+   - Paste address in "Miner Address" field
+   - Set "Blocks" to 3
+   - Click "Start Mining"
+
+EXPECTED RESULT:
+  - Progress bar appears
+  - Updates every 500ms (1/3, 2/3, 3/3)
+  - No errors
+  - No freezing
+  - Mining completes in 10-60 seconds
+
+================================================================================
+                         IF STILL GETTING ERROR
+================================================================================
+
+Check:
+  1. Is shared_state.py running? (Terminal 1 should show "Listening")
+  2. Did you RESTART shared_state.py? (must kill old process first)
+  3. Is the address you copied still visible in browser?
+  4. Is the address field populated in Mining tab?
+
+If all above are yes, try:
+  - Refresh browser (Ctrl+R or Cmd+R)
+  - Generate a NEW address (old ones from before might be cached)
+  - Try mining 1 block instead of 3
+
+Debug:
+  - Open browser console (F12)
+  - Look for error messages in red
+  - Try mining again
+  - Check console for what error was returned
+
+================================================================================
+                        WHAT CHANGED / WHAT WAS FIXED
+================================================================================
+
+1. Fixed shared_state.py
+   - Better error handling for mining start
+   - Added socket timeout (30 seconds)
+   - Improved logging
+
+2. Fixed web_app_shared.py
+   - Added /api/wallet/addresses endpoint
+   - Better error messages
+
+3. Fixed mining.html (JavaScript)
+   - Status check now uses correct field (data.status === 'success')
+   - Uses correct field name (blocks_to_mine instead of total_blocks)
+   - Uses correct mining status check (data.is_mining)
+   - No more freezing!
+
+================================================================================
+                          VERIFY THE FIX WORKS
+================================================================================
+
+After completing mining in browser:
+
+Go to Blockchain tab
+- Height should have increased (e.g., 1 to 4)
+- Total Money should have increased (e.g., 50 to 200 coins)
+
+If both ✓, mining is working!
+
+================================================================================
+                            SUMMARY
+================================================================================
+
+Changes made:
+  ✓ fixed shared_state.py (address lookup, socket timeout)
+  ✓ fixed web_app_shared.py (new endpoint)
+  ✓ fixed mining.html (JavaScript status checks)
+
+To apply fixes:
+  ✓ RESTART shared_state.py (must kill old process)
+  ✓ RESTART web_app_shared.py
+  ✓ Refresh browser
+  ✓ Try mining
+
+Expected: Mining works smoothly with progress bar updates every 500ms!
+
+================================================================================
