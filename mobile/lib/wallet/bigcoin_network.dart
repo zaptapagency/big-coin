@@ -43,6 +43,18 @@ class BigCoinNetwork {
     opreturnSize: 80,
   );
 
+  // Regtest shares testnet's version/bip32 bytes but uses the "big" HRP
+  // (see the C++ chain's CRegTestParams). Used only for local dev/testing.
+  static final NetworkType _regtestCoins = NetworkType(
+    messagePrefix: 'BigCoin Signed Message:\n',
+    bech32: 'big',
+    bip32: Bip32Type(public: 0x043587cf, private: 0x04358394),
+    pubKeyHash: 111,
+    scriptHash: 196,
+    wif: 239,
+    opreturnSize: 80,
+  );
+
   static final BigCoinNetwork mainnet = BigCoinNetwork(
     id: 'mainnet',
     coins: _mainnetCoins,
@@ -55,6 +67,20 @@ class BigCoinNetwork {
     addressPrefixHint: 'tbig1…',
   );
 
-  static BigCoinNetwork byId(String id) =>
-      id == 'testnet' ? testnet : mainnet;
+  static final BigCoinNetwork regtest = BigCoinNetwork(
+    id: 'regtest',
+    coins: _regtestCoins,
+    addressPrefixHint: 'big1…',
+  );
+
+  static BigCoinNetwork byId(String id) {
+    switch (id) {
+      case 'testnet':
+        return testnet;
+      case 'regtest':
+        return regtest;
+      default:
+        return mainnet;
+    }
+  }
 }

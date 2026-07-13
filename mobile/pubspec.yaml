@@ -21,6 +21,8 @@ dependencies:
   coinslib: ^3.1.8           # HD wallet, secp256k1, legacy+bech32 address, WIF (custom networks)
   flutter_secure_storage: ^9.0.0  # encrypted key storage (Keystore/Keychain)
   local_auth: ^2.1.7         # PIN / biometric unlock
+  hex: ^0.2.0                # scriptPubKey hex <-> bytes
+  bs58check: ^1.0.2          # base58check decode for legacy addresses
 
 dev_dependencies:
   flutter_test:

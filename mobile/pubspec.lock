@@ -50,7 +50,7 @@ packages:
     source: hosted
     version: "2.1.2"
   bs58check:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: bs58check
       sha256: c4a164d42b25c2f6bc88a8beccb9fc7d01440f3c60ba23663a20a70faf484ea9
@@ -315,7 +315,7 @@ packages:
     source: hosted
     version: "2.3.2"
   hex:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: hex
       sha256: "4e7cd54e4b59ba026432a6be2dd9d96e4c5205725194997193bf871703b82c4a"
