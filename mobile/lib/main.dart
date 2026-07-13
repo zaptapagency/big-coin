@@ -1,30 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'screens/wallet_screen.dart';
-import 'screens/mining_screen.dart';
-import 'screens/blockchain_screen.dart';
-import 'services/api_service.dart';
+
+import 'services/chain_service.dart';
+import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'wallet/wallet_controller.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const BigCoinApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class BigCoinApp extends StatelessWidget {
+  const BigCoinApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<ApiService>(create: (_) => ApiService()),
+        Provider<ChainService>(create: (_) => ChainService()),
+        ChangeNotifierProvider<WalletController>(
+          create: (ctx) =>
+              WalletController(chain: ctx.read<ChainService>()),
+        ),
       ],
       child: MaterialApp(
-        title: 'BigCoin Mobile',
-        theme: ThemeData.dark(
-          useMaterial3: true,
-        ).copyWith(
-          primaryColor: const Color(0xFF1F6FD9),
+        title: 'Big Coin Wallet',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData.dark(useMaterial3: true).copyWith(
           scaffoldBackgroundColor: const Color(0xFF121212),
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFF1F6FD9),
+            secondary: Color(0xFF1F6FD9),
+          ),
           appBarTheme: const AppBarTheme(
             backgroundColor: Color(0xFF1F1F1F),
             elevation: 0,
@@ -35,57 +42,45 @@ class MyApp extends StatelessWidget {
             unselectedItemColor: Color(0xFF666666),
           ),
         ),
-        home: const HomeScreen(),
-        debugShowCheckedModeBanner: false,
+        home: const _Root(),
       ),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+/// Decides between onboarding and the main app depending on whether a wallet
+/// already exists on the device.
+class _Root extends StatefulWidget {
+  const _Root();
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<_Root> createState() => _RootState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+class _RootState extends State<_Root> {
+  late final Future<bool> _loaded;
 
-  final List<Widget> _screens = [
-    const WalletScreen(),
-    const MiningScreen(),
-    const BlockchainScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loaded = context.read<WalletController>().loadExisting();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: 'Wallet',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.build),
-            label: 'Mining',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.link),
-            label: 'Blockchain',
-          ),
-        ],
-      ),
+    return FutureBuilder<bool>(
+      future: _loaded,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final controller = context.watch<WalletController>();
+        return controller.hasWallet
+            ? const HomeScreen()
+            : const OnboardingScreen();
+      },
     );
   }
 }
