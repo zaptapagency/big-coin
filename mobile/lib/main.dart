@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'services/chain_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'wallet/local_auth_service.dart';
 import 'wallet/wallet_controller.dart';
 
 void main() {
@@ -18,6 +19,7 @@ class BigCoinApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<ChainService>(create: (_) => ChainService()),
+        Provider<LocalAuthService>(create: (_) => LocalAuthService()),
         ChangeNotifierProvider<WalletController>(
           create: (ctx) =>
               WalletController(chain: ctx.read<ChainService>()),

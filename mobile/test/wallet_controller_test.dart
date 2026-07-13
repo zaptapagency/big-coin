@@ -128,7 +128,7 @@ void main() {
   test('send builds, signs, and broadcasts a tx', () async {
     final c = makeController();
     await c.importExisting(_mnemonic, network: BigCoinNetwork.testnet);
-    final txid = await c.send(toAddress: _dest, amountBig: 1.0);
+    final txid = await c.send(toAddress: _dest, amountSats: 100000000);
     expect(txid, 'deadbeef');
     // The broadcast payload must be a real signed tx hex (segwit marker 0001).
     expect(lastBroadcastHex, isNotNull);
