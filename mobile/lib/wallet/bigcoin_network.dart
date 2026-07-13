@@ -1,4 +1,5 @@
 import 'package:coinslib/coinslib.dart';
+import 'package:flutter/foundation.dart';
 
 /// Big Coin (BIG) network parameters.
 ///
@@ -78,7 +79,12 @@ class BigCoinNetwork {
       case 'testnet':
         return testnet;
       case 'regtest':
-        return regtest;
+        // Regtest shares mainnet's bech32 HRP ("big"), so a regtest and a
+        // mainnet address are indistinguishable by format. Only honor it in
+        // debug builds; a release build falls back to mainnet rather than
+        // risk treating a real mainnet address as regtest.
+        if (kDebugMode) return regtest;
+        return mainnet;
       default:
         return mainnet;
     }
