@@ -17,11 +17,31 @@ return empty/zero results with `"demo": true`, and broadcast returns 503.
 The wallet builds and signs transactions ON DEVICE; the server only relays the
 finished hex and reports chain state. No keys ever reach this server.
 """
+import re
+import threading
+import time
+
 from flask import Blueprint, jsonify, request
 
 from rpc import RpcClient, RPCConnectionError, RPCError
 
 api = Blueprint("api", __name__, url_prefix="/api")
+
+# Addresses are base58check or bech32: strictly alphanumeric, no separators.
+# Anchoring to this charset + length blocks descriptor-string injection into
+# scantxoutset's `addr(...)` argument and rejects obviously malformed input
+# before it ever reaches the node.
+_ADDRESS_RE = re.compile(r"^[a-zA-Z0-9]{8,100}$")
+
+# 64-hex-char transaction id.
+_TXID_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+
+# scantxoutset scans the entire UTXO set and holds cs_main, so it is expensive
+# and must not run concurrently for every request. Results are cached briefly
+# and scans are serialized under a single lock (also throttles abuse).
+_CACHE_TTL = 15.0  # seconds
+_scan_cache = {}  # address -> (expires_at, (utxos, scan_height))
+_scan_lock = threading.Lock()
 
 
 def _client():
@@ -32,6 +52,10 @@ def _err(message, status):
     resp = jsonify({"error": message})
     resp.status_code = status
     return resp
+
+
+def _valid_address(address):
+    return bool(_ADDRESS_RE.match(address))
 
 
 @api.route("/status")
@@ -89,12 +113,39 @@ def _scan_utxos(client, address):
     return utxos, scan_height
 
 
+def _cached_scan(client, address):
+    """Cached + serialized wrapper around _scan_utxos.
+
+    Reuses a recent scan (within _CACHE_TTL) for the same address, and holds
+    _scan_lock so at most one scantxoutset runs at a time. Demo mode is not
+    cached (it's already a cheap no-op)."""
+    if client.is_demo():
+        return _scan_utxos(client, address)
+
+    now = time.monotonic()
+    cached = _scan_cache.get(address)
+    if cached and cached[0] > now:
+        return cached[1]
+
+    with _scan_lock:
+        # Re-check under the lock: another request may have just scanned.
+        cached = _scan_cache.get(address)
+        now = time.monotonic()
+        if cached and cached[0] > now:
+            return cached[1]
+        result = _scan_utxos(client, address)
+        _scan_cache[address] = (now + _CACHE_TTL, result)
+        return result
+
+
 @api.route("/address/<address>/utxos")
 def address_utxos(address):
     client = _client()
     address = address.strip()
+    if not _valid_address(address):
+        return _err("invalid address", 400)
     try:
-        utxos, scan_height = _scan_utxos(client, address)
+        utxos, scan_height = _cached_scan(client, address)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
     except RPCError as exc:
@@ -112,8 +163,10 @@ def address_utxos(address):
 def address_balance(address):
     client = _client()
     address = address.strip()
+    if not _valid_address(address):
+        return _err("invalid address", 400)
     try:
-        utxos, _ = _scan_utxos(client, address)
+        utxos, _ = _cached_scan(client, address)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
     except RPCError as exc:
@@ -173,6 +226,8 @@ def broadcast():
 def tx_json(txid):
     client = _client()
     txid = txid.strip()
+    if not _TXID_RE.match(txid):
+        return _err("invalid txid", 400)
     try:
         transaction = client.getrawtransaction(txid, True)
     except RPCConnectionError as exc:

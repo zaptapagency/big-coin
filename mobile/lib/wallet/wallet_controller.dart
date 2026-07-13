@@ -108,11 +108,11 @@ class WalletController extends ChangeNotifier {
     }
   }
 
-  /// Builds, signs (on-device), and broadcasts a payment of [amountBig] BIG to
-  /// [toAddress]. Returns the accepted txid.
+  /// Builds, signs (on-device), and broadcasts a payment of [amountSats] sats
+  /// (1 BIG = 1e8 sats) to [toAddress]. Returns the accepted txid.
   Future<String> send({
     required String toAddress,
-    required double amountBig,
+    required int amountSats,
   }) async {
     final account = _account;
     final mnemonic = _mnemonic;
@@ -121,7 +121,6 @@ class WalletController extends ChangeNotifier {
     }
     _set(busy: true, clearError: true);
     try {
-      final amountSats = (amountBig * 1e8).round();
       final utxos = await chain.getUtxos(account.bech32Address);
       final feeBigPerKb = await chain.getFeeRate();
       final feeSatPerVByte = feeBigPerKb * 1e8 / 1000;

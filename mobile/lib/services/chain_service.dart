@@ -22,24 +22,62 @@ class ChainService {
     String? baseUrl,
     http.Client? httpClient,
     this.timeout = const Duration(seconds: 15),
-  })  : baseUrl = (baseUrl ?? defaultBaseUrl).replaceAll(RegExp(r'/+$'), ''),
+  })  : baseUrl = _sanitizeBaseUrl(baseUrl ?? defaultBaseUrl),
         _http = httpClient ?? http.Client();
 
-  void setBaseUrl(String url) =>
-      baseUrl = url.replaceAll(RegExp(r'/+$'), '');
+  void setBaseUrl(String url) => baseUrl = _sanitizeBaseUrl(url);
+
+  /// Normalizes a base URL and enforces HTTPS so wallet traffic (addresses,
+  /// balances, signed transactions) is never sent in cleartext. Plain `http`
+  /// is allowed only for loopback hosts, for local development against a node.
+  static String _sanitizeBaseUrl(String url) {
+    final trimmed = url.trim().replaceAll(RegExp(r'/+$'), '');
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      throw ArgumentError('Invalid explorer URL: $url');
+    }
+    final isLoopback =
+        uri.host == 'localhost' || uri.host == '127.0.0.1' || uri.host == '::1';
+    if (uri.scheme == 'http' && !isLoopback) {
+      throw ArgumentError(
+          'Refusing insecure http:// explorer URL (use https): $url');
+    }
+    if (uri.scheme != 'https' && uri.scheme != 'http') {
+      throw ArgumentError('Unsupported explorer URL scheme: ${uri.scheme}');
+    }
+    return trimmed;
+  }
 
   Uri _u(String path) => Uri.parse('$baseUrl$path');
 
   Map<String, dynamic> _decode(http.Response r) {
     final body = r.body.isEmpty ? '{}' : r.body;
-    final Map<String, dynamic> json = jsonDecode(body) as Map<String, dynamic>;
-    if (r.statusCode >= 400) {
+    Object? parsed;
+    try {
+      parsed = jsonDecode(body);
+    } catch (_) {
+      // Non-JSON body (e.g. a gateway HTML error page). Surface a clean API
+      // exception instead of leaking a raw FormatException.
       throw ChainApiException(
-        (json['error'] ?? 'HTTP ${r.statusCode}').toString(),
+        r.statusCode >= 400
+            ? 'HTTP ${r.statusCode}'
+            : 'Malformed response from explorer',
         r.statusCode,
       );
     }
-    return json;
+    if (parsed is! Map<String, dynamic>) {
+      throw ChainApiException(
+        'Unexpected response shape from explorer',
+        r.statusCode,
+      );
+    }
+    if (r.statusCode >= 400) {
+      throw ChainApiException(
+        (parsed['error'] ?? 'HTTP ${r.statusCode}').toString(),
+        r.statusCode,
+      );
+    }
+    return parsed;
   }
 
   /// Chain tip + node summary.

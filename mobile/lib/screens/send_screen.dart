@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../wallet/address_script.dart';
+import '../wallet/amount.dart';
+import '../wallet/local_auth_service.dart';
 import '../wallet/tx_builder.dart';
 import '../wallet/wallet_controller.dart';
 
@@ -28,7 +30,7 @@ class _SendScreenState extends State<SendScreen> {
     super.dispose();
   }
 
-  bool _validate(WalletController wallet) {
+  int? _validate(WalletController wallet) {
     String? addrErr;
     String? amtErr;
 
@@ -43,21 +45,29 @@ class _SendScreenState extends State<SendScreen> {
       }
     }
 
-    final amount = double.tryParse(_amountController.text.trim());
-    if (amount == null || amount <= 0) {
-      amtErr = 'Enter a positive amount';
+    final sats = Amount.tryParseBigToSats(_amountController.text);
+    if (sats == null || sats <= 0) {
+      amtErr = 'Enter a positive amount (max 8 decimals)';
+    } else {
+      // Client-side balance check so we fail fast without a round-trip.
+      final availableSats = wallet.balance == null
+          ? null
+          : (wallet.balance!.total * Amount.satsPerBig).round();
+      if (availableSats != null && sats > availableSats) {
+        amtErr = 'Amount exceeds available balance';
+      }
     }
 
     setState(() {
       _addressError = addrErr;
       _amountError = amtErr;
     });
-    return addrErr == null && amtErr == null;
+    return (addrErr == null && amtErr == null) ? sats : null;
   }
 
   Future<void> _send(WalletController wallet) async {
-    if (!_validate(wallet)) return;
-    final amount = double.parse(_amountController.text.trim());
+    final sats = _validate(wallet);
+    if (sats == null) return;
     final to = _addressController.text.trim();
 
     final confirmed = await showDialog<bool>(
@@ -65,7 +75,7 @@ class _SendScreenState extends State<SendScreen> {
       builder: (_) => AlertDialog(
         title: const Text('Confirm send'),
         content: Text(
-            'Send ${amount.toStringAsFixed(8)} BIG to:\n\n$to\n\nOn ${wallet.network.id}.'),
+            'Send ${Amount.satsToBigString(sats)} BIG to:\n\n$to\n\nOn ${wallet.network.id}.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -80,8 +90,22 @@ class _SendScreenState extends State<SendScreen> {
     );
     if (confirmed != true) return;
 
+    // Require device authentication (biometric / PIN) before spending.
+    if (!mounted) return;
+    final auth = context.read<LocalAuthService>();
+    if (await auth.isAvailable()) {
+      final ok = await auth.authenticate('Authenticate to authorize this payment');
+      if (!ok) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Authentication required to send')),
+        );
+        return;
+      }
+    }
+
     try {
-      final txid = await wallet.send(toAddress: to, amountBig: amount);
+      final txid = await wallet.send(toAddress: to, amountSats: sats);
       if (!mounted) return;
       _addressController.clear();
       _amountController.clear();

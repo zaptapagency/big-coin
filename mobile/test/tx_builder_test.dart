@@ -113,4 +113,47 @@ void main() {
     // Entire remainder becomes fee.
     expect(signed.feeSats, 150);
   });
+
+  // Boundary: change output is created only once the leftover after the
+  // 2-output fee (141 vB @ 1 sat/vB) is at least one dust (294). That happens
+  // when remainder = amount leftover in the input >= 141 + 294 = 435 sats.
+  test('keeps change exactly at the dust boundary (remainder 435)', () {
+    final signed = builder.buildSpend(
+      utxos: [utxo(1.0)],
+      toAddress: acct1.bech32Address,
+      amountSats: 100000000 - 435,
+      changeAddress: acct0.bech32Address,
+      wif: acct0.wif,
+      feeRateSatPerVByte: 1.0,
+    );
+    expect(signed.feeSats, 141);
+    expect(signed.changeSats, 294);
+  });
+
+  test('folds change into fee one sat below the boundary (remainder 434)', () {
+    final signed = builder.buildSpend(
+      utxos: [utxo(1.0)],
+      toAddress: acct1.bech32Address,
+      amountSats: 100000000 - 434,
+      changeAddress: acct0.bech32Address,
+      wif: acct0.wif,
+      feeRateSatPerVByte: 1.0,
+    );
+    expect(signed.changeSats, 0);
+    expect(signed.feeSats, 434);
+  });
+
+  test('sending the entire balance throws (cannot cover the fee)', () {
+    expect(
+      () => builder.buildSpend(
+        utxos: [utxo(1.0)],
+        toAddress: acct1.bech32Address,
+        amountSats: 100000000, // no room left for any fee
+        changeAddress: acct0.bech32Address,
+        wif: acct0.wif,
+        feeRateSatPerVByte: 1.0,
+      ),
+      throwsA(isA<InsufficientFundsException>()),
+    );
+  });
 }

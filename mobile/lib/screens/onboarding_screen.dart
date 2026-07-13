@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../wallet/bigcoin_network.dart';
+import '../wallet/local_auth_service.dart';
 import '../wallet/wallet_controller.dart';
 
 /// First-run flow: create a new wallet (shows the recovery phrase to back up)
@@ -56,6 +56,14 @@ class OnboardingScreen extends StatelessWidget {
 
   Future<void> _createWallet(BuildContext context) async {
     final controller = context.read<WalletController>();
+    final auth = context.read<LocalAuthService>();
+
+    // Gate revealing the recovery phrase behind device auth when available.
+    if (await auth.isAvailable()) {
+      final ok = await auth.authenticate('Authenticate to reveal your recovery phrase');
+      if (!ok) return;
+    }
+
     final phrase =
         await controller.createNew(network: BigCoinNetwork.testnet);
     if (!context.mounted) return;
@@ -83,7 +91,9 @@ class _BackupDialog extends StatelessWidget {
           children: [
             const Text(
               'Write these 12 words down in order. Anyone with them controls '
-              'your coins. They are never sent anywhere.',
+              'your coins. They are never sent anywhere.\n\n'
+              'For your safety this phrase cannot be copied — write it down '
+              'by hand and store it offline.',
               style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -94,13 +104,6 @@ class _BackupDialog extends StatelessWidget {
                 for (var i = 0; i < words.length; i++)
                   Chip(label: Text('${i + 1}. ${words[i]}')),
               ],
-            ),
-            const SizedBox(height: 12),
-            TextButton.icon(
-              icon: const Icon(Icons.copy, size: 18),
-              label: const Text('Copy phrase'),
-              onPressed: () =>
-                  Clipboard.setData(ClipboardData(text: phrase)),
             ),
           ],
         ),
