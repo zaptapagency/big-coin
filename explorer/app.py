@@ -9,9 +9,11 @@ import datetime
 from flask import Flask, abort, redirect, render_template, request, url_for
 
 import config
+from api import api as api_blueprint
 from rpc import RpcClient, RPCConnectionError, RPCError
 
 app = Flask(__name__)
+app.register_blueprint(api_blueprint)
 
 
 # --- Jinja filters -------------------------------------------------------

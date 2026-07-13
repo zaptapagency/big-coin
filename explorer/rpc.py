@@ -161,3 +161,20 @@ class RpcClient:
 
     def getrawmempool(self, verbose=False):
         return self.call("getrawmempool", verbose)
+
+    # -- wallet-support wrappers (require a live node; not in demo) --------
+
+    def scantxoutset(self, action, scanobjects):
+        """Scan the UTXO set. `scanobjects` is a list of descriptor dicts,
+        e.g. [{"desc": "addr(<address>)"}]. Works on a stock node without an
+        address index. Not available in demo mode."""
+        return self.call("scantxoutset", action, scanobjects)
+
+    def sendrawtransaction(self, hexstring):
+        return self.call("sendrawtransaction", hexstring)
+
+    def estimatesmartfee(self, conf_target):
+        return self.call("estimatesmartfee", int(conf_target))
+
+    def decoderawtransaction(self, hexstring):
+        return self.call("decoderawtransaction", hexstring)

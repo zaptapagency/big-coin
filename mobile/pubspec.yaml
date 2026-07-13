@@ -16,6 +16,11 @@ dependencies:
   provider: ^6.0.0
   qr_flutter: ^4.1.0
   json_annotation: ^4.8.0
+  # --- On-device wallet (non-custodial key layer) ---
+  bip39: ^1.0.6              # BIP39 mnemonic seed phrase
+  coinslib: ^3.1.8           # HD wallet, secp256k1, legacy+bech32 address, WIF (custom networks)
+  flutter_secure_storage: ^9.0.0  # encrypted key storage (Keystore/Keychain)
+  local_auth: ^2.1.7         # PIN / biometric unlock
 
 dev_dependencies:
   flutter_test:
