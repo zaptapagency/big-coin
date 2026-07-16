@@ -42,6 +42,22 @@
 .dl__steps a { color: var(--ivory); border-bottom: 1px solid var(--hair); }
 .dl__steps a:hover { border-color: var(--gold-dim); }
 
+.dl__wallet {
+  border: 1px solid var(--gold-dim); border-radius: 12px; padding: 28px 26px;
+  margin: 34px 0; background: rgba(201, 162, 75, .04);
+}
+.dl__wallet-head h2 { font-size: 22px; color: var(--ivory); margin: 8px 0 8px; }
+.dl__wallet-head p { color: var(--mist); font-size: 15px; line-height: 1.7; margin: 0 0 20px; max-width: 640px; }
+.dl__wallet-body .dlcard__cta { display: inline-block; padding: 12px 22px; }
+.dl__wallet-meta { font-size: 13px; color: var(--mist); margin: 12px 0 18px; }
+.dl__wallet-body ol { margin: 0 0 16px; padding-left: 22px; color: var(--mist); font-size: 15px; line-height: 1.9; }
+.dl__wallet-note { font-size: 13px; color: var(--mist); line-height: 1.6; margin: 0; }
+.dl__wallet code {
+  font-family: var(--mono); font-size: 13px; color: var(--ivory);
+  background: rgba(255, 255, 255, .04); border: 1px solid var(--hair);
+  border-radius: 6px; padding: 2px 7px;
+}
+
 .dl__note {
   text-align: center; font-size: 14px; color: var(--mist); line-height: 1.6;
   max-width: 620px; margin: 0 auto;

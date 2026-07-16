@@ -77,6 +77,24 @@
       </ol>
     </div>
 
+    <section class="dl__wallet">
+      <div class="dl__wallet-head">
+        <span class="dlcard__tag">Full node + GUI</span>
+        <h2>MoonBite Core wallet</h2>
+        <p>The real desktop wallet — a full node with a graphical send/receive/mine interface. Runs the true MoonBite Core (<code>v0.21.5.5</code>), generates <code>moon1…</code> addresses, and syncs the chain itself.</p>
+      </div>
+      <div class="dl__wallet-body">
+        <a class="dlcard__cta" href="downloads/moonbite-wallet-linux-x86_64.tar.gz" download>Download wallet — Linux x86-64 (.tar.gz)</a>
+        <p class="dl__wallet-meta">Bundle: <code>moonbite-qt</code> · <code>moonbited</code> · <code>moonbite-cli</code> · sample config · SHA256SUMS — ~12&nbsp;MB</p>
+        <ol>
+          <li><code>tar -xzf moonbite-wallet-linux-x86_64.tar.gz &amp;&amp; cd moonbite-wallet</code></li>
+          <li><code>chmod +x moonbite-qt moonbited moonbite-cli</code></li>
+          <li><code>./moonbite-qt</code> — the wallet creates <code>~/.moonbite</code> on first run.</li>
+        </ol>
+        <p class="dl__wallet-note">Linux x86-64 only. On Windows, run it inside WSL2 (Ubuntu 22.04), or use the browser / one-click miner above. See <code>README.txt</code> in the bundle for dependencies and headless-node steps.</p>
+      </div>
+    </section>
+
     <p class="dl__note">
       <strong>Honest note:</strong> MoonBite is pre-mainnet — no coins have market value yet.
       Mining is enabled by the explorer operator (<code>MINING_ENABLED</code>). If a miner says
