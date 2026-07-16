@@ -1,0 +1,5 @@
+# Keep Unix line endings on scripts so they run on macOS/Linux after download.
+*.sh    text eol=lf
+*.py    text eol=lf
+# Windows launcher stays CRLF.
+*.bat   text eol=crlf

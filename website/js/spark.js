@@ -174,7 +174,8 @@
     var status = el("liveStatus");
     if (!urlInput || !addrInput || !btn) return;
 
-    // Prefill explorer URL from ?api=..., then localStorage.
+    // Prefill explorer URL from ?api=..., then localStorage, then the live default.
+    var DEFAULT_EXPLORER = "https://moonbite-production.up.railway.app";
     var params = new URLSearchParams(location.search);
     var apiParam = params.get("api");
     if (apiParam) {
@@ -186,6 +187,7 @@
         if (saved) urlInput.value = saved;
       } catch (e) {}
     }
+    if (!urlInput.value) urlInput.value = DEFAULT_EXPLORER;
     try {
       var savedAddr = localStorage.getItem("moonbite_address");
       if (savedAddr) addrInput.value = savedAddr;

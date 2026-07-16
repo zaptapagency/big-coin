@@ -1,0 +1,53 @@
+/* ============================================================
+   Download — three ways to mine MoonBite.
+   Inherits tokens from style.css.
+   ============================================================ */
+.dl { max-width: 860px; margin: 0 auto; padding: 56px 24px 40px; }
+
+.dl__head { text-align: center; margin-bottom: 8px; }
+.dl__head h1 { font-size: clamp(28px, 5vw, 40px); color: var(--ivory); margin: 0 0 12px; }
+.dl__head p { color: var(--mist); font-size: 16px; line-height: 1.6; margin: 0 auto; max-width: 560px; }
+
+.dl__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 40px 0 8px; }
+
+.dlcard {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--hair); border-radius: 12px; padding: 24px 20px;
+  background: rgba(255, 255, 255, .015);
+}
+.dlcard__tag { font-family: var(--mono); font-size: 12px; color: var(--gold); letter-spacing: .08em; text-transform: uppercase; }
+.dlcard__title { font-size: 20px; color: var(--ivory); margin: 8px 0 6px; }
+.dlcard__desc { font-size: 14px; color: var(--mist); line-height: 1.6; flex: 1; margin: 0 0 18px; }
+.dlcard__cta {
+  display: inline-block; text-align: center; font-family: var(--sans);
+  font-size: 15px; font-weight: 600; padding: 12px 0; border-radius: 8px;
+  color: var(--obsidian); background: var(--gold); border: 1px solid var(--gold);
+  transition: filter .15s;
+}
+.dlcard__cta:hover { filter: brightness(1.08); }
+.dlcard__cta--ghost { color: var(--ivory); background: transparent; border: 1px solid var(--hair); }
+.dlcard__cta--ghost:hover { border-color: var(--gold-dim); }
+.dlcard__sub { display: flex; gap: 12px; margin-top: 10px; justify-content: center; }
+.dlcard__sub a { font-size: 13px; color: var(--mist); border-bottom: 1px solid var(--hair); padding-bottom: 2px; }
+.dlcard__sub a:hover { border-color: var(--gold-dim); color: var(--ivory); }
+
+.dl__steps { border: 1px solid var(--hair); border-radius: 12px; padding: 28px 26px; margin: 34px 0; }
+.dl__steps h2 { font-size: 18px; color: var(--ivory); margin: 0 0 18px; }
+.dl__steps ol { margin: 0; padding-left: 22px; color: var(--mist); font-size: 15px; line-height: 1.9; }
+.dl__steps ol code {
+  font-family: var(--mono); font-size: 13px; color: var(--ivory);
+  background: rgba(255, 255, 255, .04); border: 1px solid var(--hair);
+  border-radius: 6px; padding: 2px 7px;
+}
+.dl__steps a { color: var(--ivory); border-bottom: 1px solid var(--hair); }
+.dl__steps a:hover { border-color: var(--gold-dim); }
+
+.dl__note {
+  text-align: center; font-size: 14px; color: var(--mist); line-height: 1.6;
+  max-width: 620px; margin: 0 auto;
+}
+.dl__note strong { color: var(--ivory); }
+
+@media (max-width: 720px) {
+  .dl__grid { grid-template-columns: 1fr; }
+}
