@@ -19,6 +19,7 @@ finished hex and reports chain state. No keys ever reach this server.
 """
 from flask import Blueprint, jsonify, request
 
+import config
 from rpc import RpcClient, RPCConnectionError, RPCError
 
 api = Blueprint("api", __name__, url_prefix="/api")
@@ -31,6 +32,30 @@ def _client():
 def _err(message, status):
     resp = jsonify({"error": message})
     resp.status_code = status
+    return resp
+
+
+def _allowed_origin(origin):
+    """Return the value to echo in Access-Control-Allow-Origin, or None."""
+    allow = [o.strip() for o in config.MINING_CORS_ORIGINS.split(",") if o.strip()]
+    if "*" in allow:
+        return "*"
+    if origin and origin in allow:
+        return origin
+    return None
+
+
+@api.after_request
+def _cors(resp):
+    """Permit the browser miner (served from the website origin) to call the
+    JSON API cross-origin. Only origins in MINING_CORS_ORIGINS are echoed."""
+    origin = request.headers.get("Origin")
+    allowed = _allowed_origin(origin)
+    if allowed:
+        resp.headers["Access-Control-Allow-Origin"] = allowed
+        resp.headers["Vary"] = "Origin"
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return resp
 
 
@@ -167,6 +192,56 @@ def broadcast():
         return _err(str(exc), 400)
 
     return jsonify({"txid": txid})
+
+
+@api.route("/mine", methods=["POST", "OPTIONS"])
+def mine():
+    """Trigger real mining of one block to `address`. The NODE performs the
+    proof-of-work (generatetoaddress); this endpoint just relays the request so
+    a browser/phone can mine the live chain. Disabled unless MINING_ENABLED."""
+    if request.method == "OPTIONS":
+        return ("", 204)
+
+    if not config.MINING_ENABLED:
+        return _err("mining endpoint is disabled (set MINING_ENABLED=1 on the explorer)", 403)
+
+    client = _client()
+    if client.is_demo():
+        return _err("no live node available (explorer is in demo mode)", 503)
+
+    data = request.get_json(silent=True) or {}
+    address = (data.get("address") or "").strip()
+    if not address:
+        return _err("missing 'address' in request body", 400)
+
+    # Validate the address on the node before mining to it.
+    try:
+        info = client.validateaddress(address)
+        if not info.get("isvalid"):
+            return _err("invalid MoonBite address", 400)
+    except RPCConnectionError as exc:
+        return _err(str(exc), 503)
+    except RPCError as exc:
+        return _err(str(exc), 502)
+
+    try:
+        before = client.getblockcount()
+        hashes = client.generatetoaddress(1, address, config.MINING_MAXTRIES)
+    except RPCConnectionError as exc:
+        return _err(str(exc), 503)
+    except RPCError as exc:
+        return _err(str(exc), 502)
+
+    hashes = hashes or []
+    return jsonify({
+        "mined": len(hashes),
+        "hashes": hashes,
+        "height": before + len(hashes),
+        "address": address,
+        # False when the PoW budget was exhausted this call without a block --
+        # the client should simply call again.
+        "found": bool(hashes),
+    })
 
 
 @api.route("/tx/<txid>")

@@ -100,13 +100,32 @@
 
       <div class="mining__hr"></div>
 
-      <p class="claim-label muted">Claim to a wallet</p>
-      <div class="claim">
-        <button type="button" class="claim__btn" disabled>Paste address</button>
-        <button type="button" class="claim__btn" disabled>QR</button>
-        <button type="button" class="claim__btn" disabled>moonbite://</button>
+      <div class="mining__hr"></div>
+
+      <!-- ===== Mine to the LIVE MoonBite chain (real blocks) ===== -->
+      <div class="livemine" id="livemine">
+        <p class="claim-label">Mine to the live MoonBite chain</p>
+        <p class="livemine__hint muted">
+          Enter your MoonBite address and your explorer URL. The node does the
+          real proof-of-work and credits the block reward to your address.
+        </p>
+        <div class="livemine__row">
+          <input type="text" id="explorerUrl" class="livemine__input"
+                 placeholder="Explorer URL, e.g. https://moonbite-explorer.up.railway.app"
+                 autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="livemine__row">
+          <input type="text" id="mineAddress" class="livemine__input"
+                 placeholder="Your reward address (moon1... or M...)"
+                 autocomplete="off" spellcheck="false" />
+          <button type="button" class="btn-accept" id="mineLiveBtn">Mine a block</button>
+        </div>
+        <p class="livemine__status mono" id="liveStatus" hidden></p>
+        <p class="claim-note muted">
+          Honest note: the heavy RandomX work runs on the node (server-side),
+          triggered from here — so blocks are real and credited to you.
+        </p>
       </div>
-      <p class="claim-note muted">Claiming activates when the real miner ships with mainnet.</p>
 
       <p class="toast" id="toast" hidden></p>
     </section>

@@ -173,6 +173,16 @@ class RpcClient:
     def sendrawtransaction(self, hexstring):
         return self.call("sendrawtransaction", hexstring)
 
+    def validateaddress(self, address):
+        """Ask the node whether an address is well-formed. Not in demo mode."""
+        return self.call("validateaddress", address)
+
+    def generatetoaddress(self, nblocks, address, maxtries=1000000):
+        """Mine `nblocks` blocks to `address`, giving up after `maxtries` PoW
+        attempts. The node performs the proof-of-work. Returns a list of the
+        block hashes that were found (may be empty). Not available in demo mode."""
+        return self.call("generatetoaddress", int(nblocks), address, int(maxtries))
+
     def estimatesmartfee(self, conf_target):
         return self.call("estimatesmartfee", int(conf_target))
 

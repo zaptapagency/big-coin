@@ -162,4 +162,83 @@
     });
     el("declinedMsg").hidden = false;
   });
+
+  // ============================================================
+  // Mine to the LIVE chain — asks the explorer to mine one block
+  // to your address (the node does the real proof-of-work).
+  // ============================================================
+  (function liveMine() {
+    var urlInput = el("explorerUrl");
+    var addrInput = el("mineAddress");
+    var btn = el("mineLiveBtn");
+    var status = el("liveStatus");
+    if (!urlInput || !addrInput || !btn) return;
+
+    // Prefill explorer URL from ?api=..., then localStorage.
+    var params = new URLSearchParams(location.search);
+    var apiParam = params.get("api");
+    if (apiParam) {
+      urlInput.value = apiParam;
+      try { localStorage.setItem("moonbite_explorer", apiParam); } catch (e) {}
+    } else {
+      try {
+        var saved = localStorage.getItem("moonbite_explorer");
+        if (saved) urlInput.value = saved;
+      } catch (e) {}
+    }
+    try {
+      var savedAddr = localStorage.getItem("moonbite_address");
+      if (savedAddr) addrInput.value = savedAddr;
+    } catch (e) {}
+
+    function setStatus(msg, kind) {
+      status.hidden = false;
+      status.textContent = msg;
+      status.className = "livemine__status mono" + (kind ? " is-" + kind : "");
+    }
+
+    function normBase(u) {
+      u = (u || "").trim().replace(/\/+$/, "");
+      if (u && !/^https?:\/\//i.test(u)) u = "https://" + u;
+      return u;
+    }
+
+    var busy = false;
+    btn.addEventListener("click", function () {
+      if (busy) return;
+      var base = normBase(urlInput.value);
+      var addr = addrInput.value.trim();
+      if (!base) { setStatus("Enter your explorer URL first.", "err"); return; }
+      if (!addr) { setStatus("Enter your MoonBite reward address.", "err"); return; }
+      try {
+        localStorage.setItem("moonbite_explorer", base);
+        localStorage.setItem("moonbite_address", addr);
+      } catch (e) {}
+
+      busy = true;
+      btn.setAttribute("disabled", "disabled");
+      setStatus("Mining… the node is doing the proof-of-work.", "busy");
+
+      fetch(base + "/api/mine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: addr })
+      }).then(function (r) {
+        return r.json().then(function (body) { return { ok: r.ok, body: body }; });
+      }).then(function (res) {
+        if (!res.ok) {
+          setStatus("Node says: " + (res.body.error || "mining failed") , "err");
+        } else if (res.body.found) {
+          setStatus("Block #" + res.body.height + " mined to you ✓  " + res.body.hashes[0], "ok");
+        } else {
+          setStatus("No block this round — click again to keep trying.", "busy");
+        }
+      }).catch(function (e) {
+        setStatus("Could not reach explorer at " + base + " (" + e.message + ").", "err");
+      }).then(function () {
+        busy = false;
+        btn.removeAttribute("disabled");
+      });
+    });
+  })();
 })();

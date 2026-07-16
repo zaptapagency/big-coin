@@ -41,6 +41,20 @@ DEMO_MODE = _env_bool("DEMO_MODE", default=False)
 # Whether DEMO_MODE was explicitly requested by the user.
 DEMO_MODE_EXPLICIT = os.environ.get("DEMO_MODE") is not None
 
+# --- Browser-miner endpoint (POST /api/mine) ---
+# Lets the Spark web page trigger real mining on the node (the node does the
+# proof-of-work via generatetoaddress). Off unless MINING_ENABLED is truthy so a
+# public explorer never mines unless the operator opts in.
+MINING_ENABLED = _env_bool("MINING_ENABLED", default=False)
+# PoW attempts the node makes per /api/mine call before returning (keep modest so
+# the HTTP request returns promptly whether or not a block is found).
+MINING_MAXTRIES = int(os.environ.get("MINING_MAXTRIES", "500000"))
+# Cross-origin allow-list for the browser miner (the site is a different origin
+# from the explorer). Comma-separated; "*" allows any origin.
+MINING_CORS_ORIGINS = os.environ.get(
+    "MINING_CORS_ORIGINS", "https://zaptapagency.github.io"
+)
+
 
 def rpc_url() -> str:
     return f"http://{RPC_HOST}:{RPC_PORT}/"
