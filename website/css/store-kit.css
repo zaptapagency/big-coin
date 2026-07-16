@@ -1,0 +1,116 @@
+/* ============================================================
+   MoonBite — Store Kit
+   The icon and the five listing frames, shown as a spec sheet.
+   Inherits tokens from style.css. No gradients, no shadows,
+   no tilt. Flat, true, quiet.
+   ============================================================ */
+
+.mono { font-family: var(--mono); }
+.num  { font-variant-numeric: tabular-nums; }
+
+.kit { max-width: 1080px; margin: 0 auto; padding: 72px 24px 40px; }
+.kit-sec { max-width: 920px; margin: 0 auto; }
+
+.kit-eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--gold); margin: 0 0 14px;
+}
+.kit-title { font-size: clamp(26px, 4vw, 40px); line-height: 1.2; margin: 0 0 16px; letter-spacing: -0.01em; }
+.kit-lead { font-size: 17px; max-width: 620px; margin: 0 0 40px; }
+.kit-rule { height: 1px; background: var(--hair); margin: 72px auto; max-width: 920px; }
+
+/* ---------- Icon ---------- */
+.icon-row { display: flex; align-items: flex-end; gap: 40px; flex-wrap: wrap; }
+.icon-cell { margin: 0; text-align: center; }
+.icon-frame {
+  border: 1px solid var(--hair); border-radius: 22%;
+  display: grid; place-items: center; background: var(--obsidian); overflow: hidden;
+}
+.icon-frame--lg { width: 200px; height: 200px; }
+.icon-frame--md { width: 96px;  height: 96px;  border-radius: 24%; }
+.icon-frame--sm { width: 48px;  height: 48px;  border-radius: 26%; }
+.icon-cap { display: block; font-size: 12px; color: var(--mist); margin-top: 12px; }
+
+/* ---------- Five frames ---------- */
+.frames {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 34px 26px; margin-top: 8px;
+}
+.frame { margin: 0; }
+
+.phone {
+  border: 1px solid var(--hair); border-radius: 26px;
+  padding: 10px; background: var(--basalt);
+}
+.phone__screen {
+  border: 1px solid var(--hair); border-radius: 18px;
+  background: var(--obsidian); aspect-ratio: 9 / 19.5; overflow: hidden;
+}
+
+/* screen scaffolding */
+.scr { height: 100%; display: flex; flex-direction: column; }
+.scr--pad { padding: 22px 18px; gap: 16px; }
+.scr__label, .scr__eyebrow {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist);
+}
+
+/* Frame 1 — cold open */
+.scr--counter { align-items: center; justify-content: center; gap: 8px; text-align: center; }
+.scr__num { font-size: 26px; color: var(--gold); letter-spacing: -0.01em; }
+.scr__unit { font-size: 13px; color: var(--mist); }
+
+/* Frame 2/5 — actions */
+.scr__actions { display: flex; gap: 10px; }
+.scr__btn {
+  flex: 1; text-align: center; font-family: var(--sans); font-size: 13px; font-weight: 600;
+  padding: 11px 0; border: 1px solid var(--hair); border-radius: 8px; color: var(--ivory);
+}
+.scr__btn--gold { background: var(--gold); border-color: var(--gold); color: var(--obsidian); }
+.scr__btn--wide { display: block; margin-top: auto; }
+
+.scr__rows { display: flex; flex-direction: column; gap: 1px; margin-top: 4px; }
+.scr__row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: 12px; color: var(--mist); padding: 11px 0; border-top: 1px solid var(--hair);
+}
+.scr__row span:last-child { color: var(--ivory); font-size: 12px; }
+.scr__row--hash span:last-child { font-size: 11px; }
+.scr__row--flag span:last-child { color: var(--gold); }
+
+/* Frame 3 — dashboard */
+.scr__stats { display: flex; flex-direction: column; }
+.scr__stat {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 13px 0; border-top: 1px solid var(--hair);
+}
+.scr__k { font-size: 11px; color: var(--mist); }
+.scr__v { font-size: 18px; color: var(--ivory); }
+
+/* Frame 4 — security */
+.scr__lock { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.scr__lockmark {
+  width: 12px; height: 12px; border: 1.5px solid var(--gold); border-radius: 3px;
+  position: relative; flex: none;
+}
+.scr__lockmark::before {
+  content: ""; position: absolute; left: 2px; top: -5px; width: 6px; height: 6px;
+  border: 1.5px solid var(--gold); border-bottom: none; border-radius: 4px 4px 0 0;
+}
+.scr__lockrow { font-size: 14px; color: var(--ivory); letter-spacing: 0.08em; }
+.scr__note { font-size: 12px; line-height: 1.55; margin: 0; }
+
+/* ---------- Captions (fixed lower band feel) ---------- */
+.frame__cap {
+  font-size: 15px; color: var(--ivory); text-align: center;
+  margin-top: 16px; line-height: 1.4; padding: 0 6px;
+}
+
+/* ---------- Reviewer notes ---------- */
+.kit-notes { list-style: none; padding: 0; margin: 0; max-width: 640px; }
+.kit-notes li { font-size: 14px; padding: 12px 0 12px 20px; border-top: 1px solid var(--hair); position: relative; }
+.kit-notes li::before { content: "—"; position: absolute; left: 0; color: var(--gold-dim); }
+
+@media (max-width: 560px) {
+  .icon-row { gap: 24px; }
+  .frames { grid-template-columns: 1fr 1fr; gap: 26px 16px; }
+}

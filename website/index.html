@@ -3,357 +3,130 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="BigCoin (BIG) — a fast, open, mineable Scrypt proof-of-work cryptocurrency forked from battle-tested Litecoin/Bitcoin Core. 2.5-minute blocks, 84,000,000 max supply, fair launch." />
-  <meta name="theme-color" content="#0a0e1a" />
-  <title>BigCoin (BIG) — A Fast, Open, Mineable Cryptocurrency</title>
+  <meta name="description" content="MoonBite (MBITE) — a fixed-emission, capped, no-premine cryptocurrency. 13,999,999.909 MBITE maximum, ever. Every claim links to its proof." />
+  <meta name="theme-color" content="#0A0C0F" />
+  <title>MoonBite (MBITE) — the first coin you ever truly owned</title>
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 7v14l-12 7L4 23V9z' fill='none' stroke='%23f5a623' stroke-width='2'/%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%23C9A24B' stroke-width='2'/%3E%3C/svg%3E" />
 </head>
 <body>
   <!-- ============ NAV ============ -->
   <header class="nav" id="top">
     <div class="nav__inner">
-      <a href="#top" class="brand" aria-label="BigCoin home">
-        <svg class="brand__hex" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-          <path d="M16 2l12 7v14l-12 7L4 23V9z" fill="none" stroke="url(#navgrad)" stroke-width="2"/>
-          <defs>
-            <linearGradient id="navgrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#ffd36e"/>
-              <stop offset="1" stop-color="#f5760a"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span class="brand__name">BigCoin</span>
+      <a href="#top" class="brand" aria-label="MoonBite home">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span class="brand__name">MoonBite</span>
       </a>
-
-      <nav class="nav__links" id="navLinks" aria-label="Primary">
-        <a href="#top">Home</a>
-        <a href="#tokenomics">Tokenomics</a>
-        <a href="#mining">Mining</a>
-        <a href="#roadmap">Roadmap</a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#vision">Vision</a>
+        <a href="spark.html">Mine</a>
         <a href="#wallet">Wallet</a>
-        <a href="#mining" class="btn btn--sm btn--primary nav__cta">Get Started</a>
+        <a href="#live">Live</a>
+        <a href="#provenance">Docs</a>
       </nav>
-
-      <button class="nav__toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navLinks">
-        <span></span><span></span><span></span>
-      </button>
     </div>
   </header>
 
   <main>
-    <!-- ============ HERO ============ -->
-    <section class="hero">
-      <div class="hero__bg" aria-hidden="true"></div>
-      <div class="hero__inner">
-        <div class="hero__copy reveal">
-          <span class="pill">Scrypt Proof-of-Work · Ticker: BIG</span>
-          <h1 class="hero__title">BigCoin — a fast, open,<br /><span class="grad-text">mineable cryptocurrency</span></h1>
-          <p class="hero__sub">An open-source, community-run digital currency forked from battle-tested Litecoin and Bitcoin Core. 2.5-minute confirmations, a fair launch, and a UTXO ledger secured by proof-of-work — mine it with a CPU or GPU.</p>
-          <div class="hero__cta">
-            <a href="#mining" class="btn btn--primary">Start Mining</a>
-            <a href="#wallet" class="btn btn--ghost">Download Wallet</a>
-          </div>
-          <p class="hero__note">Open source · No custodian · Your keys, your coins</p>
-        </div>
+    <!-- ============ HERO — THE PLINTH ============ -->
+    <section class="plinth">
+      <p class="plinth__label" id="counterLabel">Maximum MBITE that can ever exist</p>
 
-        <div class="hero__art reveal" aria-hidden="true">
-          <div class="coin">
-            <svg class="coin__svg" viewBox="0 0 200 200" width="260" height="260">
-              <defs>
-                <linearGradient id="coinFace" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#ffe08a"/>
-                  <stop offset="0.5" stop-color="#f5a623"/>
-                  <stop offset="1" stop-color="#e2680a"/>
-                </linearGradient>
-                <radialGradient id="coinGlow" cx="0.5" cy="0.4" r="0.7">
-                  <stop offset="0" stop-color="#fff4d6" stop-opacity="0.9"/>
-                  <stop offset="1" stop-color="#f5a623" stop-opacity="0"/>
-                </radialGradient>
-              </defs>
-              <circle cx="100" cy="100" r="90" fill="url(#coinFace)"/>
-              <circle cx="100" cy="100" r="90" fill="url(#coinGlow)"/>
-              <circle cx="100" cy="100" r="78" fill="none" stroke="#a8500a" stroke-width="3" opacity="0.5"/>
-              <path d="M100 40l48 28v56l-48 28-48-28V68z" fill="none" stroke="#7a3c05" stroke-width="6" stroke-linejoin="round" opacity="0.85"/>
-              <text x="100" y="118" text-anchor="middle" font-family="Georgia, serif" font-size="54" font-weight="700" fill="#5c2d02">B</text>
-            </svg>
-            <div class="coin__ring coin__ring--1"></div>
-            <div class="coin__ring coin__ring--2"></div>
-          </div>
-        </div>
+      <div class="counter" id="counter" aria-live="polite" aria-label="Maximum supply: 13,999,999.909 MBITE">
+        <span class="counter__num" id="counterNum">13,999,999.909</span>
       </div>
+      <p class="counter__unit">MBITE · fixed forever · <a href="#provenance" class="link-quiet">enforced in code</a></p>
+
+      <h1 class="plinth__headline">The first coin you ever truly owned</h1>
+
+      <a href="spark.html" class="btn-primary" id="mineCta">Mine in your browser</a>
+      <p class="plinth__note" id="mineNote">Pre-mainnet · testnet &amp; regtest only · no live value yet</p>
     </section>
 
-    <!-- ============ STATS STRIP ============ -->
-    <section class="stats" aria-label="Network parameters">
-      <div class="stats__inner">
-        <div class="stat reveal"><span class="stat__val">2.5 min</span><span class="stat__label">Block Time</span></div>
-        <div class="stat reveal"><span class="stat__val">84,000,000</span><span class="stat__label">Max Supply (BIG)</span></div>
-        <div class="stat reveal"><span class="stat__val">Scrypt</span><span class="stat__label">Algorithm (PoW)</span></div>
-        <div class="stat reveal"><span class="stat__val">50 BIG</span><span class="stat__label">Block Reward</span></div>
-      </div>
+    <!-- ============ PROOF CHIPS ============ -->
+    <section class="chips" aria-label="Verifiable claims">
+      <a class="chip" href="#provenance">
+        <span class="chip__k">No premine</span>
+        <span class="chip__v">the burn — verify <span class="chip__go">→</span></span>
+      </a>
+      <a class="chip" href="#provenance">
+        <span class="chip__k">Treasury sunsets</span>
+        <span class="chip__v">ADR-005 — read <span class="chip__go">→</span></span>
+      </a>
+      <a class="chip" href="#provenance">
+        <span class="chip__k">No throne</span>
+        <span class="chip__v">frozen genesis tag <span class="chip__go">→</span></span>
+      </a>
     </section>
 
-    <!-- ============ FEATURES ============ -->
-    <section class="section" id="features">
-      <div class="wrap">
-        <div class="section__head reveal">
-          <h2>Built on proven technology</h2>
-          <p class="section__lead">BigCoin doesn't reinvent the wheel. It inherits a decade of security engineering from Bitcoin Core and Litecoin, with parameters tuned for accessible mining.</p>
-        </div>
-
-        <div class="grid grid--3">
-          <article class="card reveal">
-            <div class="card__icon">
-              <svg viewBox="0 0 24 24" width="26" height="26"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <h3>Truly Mineable</h3>
-            <p>Scrypt proof-of-work is memory-hard and CPU/GPU friendly, so ordinary hardware can take part in securing the network from day one.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon">
-              <svg viewBox="0 0 24 24" width="26" height="26"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-            </div>
-            <h3>Fast Confirmations</h3>
-            <p>A 2.5-minute target block time means transactions settle roughly four times faster than a 10-minute chain, keeping the ledger responsive.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon">
-              <svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 3H4a1 1 0 00-1 1v4M16 3h4a1 1 0 011 1v4M8 21H4a1 1 0 01-1-1v-4M16 21h4a1 1 0 001-1v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-            </div>
-            <h3>Open Source</h3>
-            <p>Forked from the battle-tested Litecoin and Bitcoin Core codebases. The full source is auditable — read it, build it, verify it yourself.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon">
-              <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3v18M5 8l7-5 7 5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <h3>Fair Launch</h3>
-            <p>A premine of 1% or less means coins are distributed primarily through open mining rather than reserved for insiders.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon">
-              <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <h3>Secure by Design</h3>
-            <p>Cumulative proof-of-work plus a UTXO transaction model gives the network the same well-understood security foundations as Bitcoin.</p>
-          </article>
-
-          <article class="card reveal">
-            <div class="card__icon">
-              <svg viewBox="0 0 24 24" width="26" height="26"><rect x="4" y="10" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>
-            </div>
-            <h3>Your Keys, Your Coins</h3>
-            <p>You hold your own private keys in a non-custodial wallet. No account, no gatekeeper, no third party that can freeze your funds.</p>
-          </article>
-        </div>
+    <!-- ============ VISION (the fixed facts) ============ -->
+    <section class="facts" id="vision">
+      <div class="facts__head">
+        <h2>Every rule is fixed in code, and public</h2>
+        <p>MoonBite makes no promise it cannot keep in code. These are the numbers, and each is verifiable.</p>
       </div>
+      <dl class="ledger">
+        <div class="ledger__row"><dt>Ticker</dt><dd>MBITE</dd></div>
+        <div class="ledger__row"><dt>Maximum supply</dt><dd>13,999,999.909 MBITE <span class="muted">— asymptotic cap, never exceeded</span></dd></div>
+        <div class="ledger__row"><dt>Block subsidy</dt><dd>10 MBITE at genesis</dd></div>
+        <div class="ledger__row"><dt>Halving</dt><dd>every 700,000 blocks <span class="muted">(~3.3 years at 2.5-min blocks)</span></dd></div>
+        <div class="ledger__row"><dt>Block time</dt><dd>2.5 minutes (150 s target)</dd></div>
+        <div class="ledger__row"><dt>Premine</dt><dd>none — any founder allocation is publicly burned <span class="muted">(ADR-006)</span></dd></div>
+        <div class="ledger__row"><dt>Treasury</dt><dd>5% of subsidy, <em>hard-sunsets at halving 2</em> <span class="muted">(ADR-005)</span></dd></div>
+        <div class="ledger__row"><dt>Fees</dt><dd>100% to the miner — none burned, none redirected <span class="muted">(ADR-007)</span></dd></div>
+        <div class="ledger__row"><dt>Proof-of-work</dt><dd>CPU-friendly <span class="muted">— RandomX port in progress; testnet runs Scrypt today</span></dd></div>
+        <div class="ledger__row"><dt>Governance</dt><dd>no throne — params frozen at the signed genesis tag <span class="muted">(ADR-007)</span></dd></div>
+      </dl>
     </section>
 
-    <!-- ============ TOKENOMICS ============ -->
-    <section class="section section--alt" id="tokenomics">
-      <div class="wrap">
-        <div class="section__head reveal">
-          <h2>Tokenomics &amp; parameters</h2>
-          <p class="section__lead">Every consensus rule is public and fixed in code. Here is exactly how BigCoin behaves.</p>
-        </div>
-
-        <div class="table-wrap reveal">
-          <table class="params">
-            <tbody>
-              <tr><th scope="row">Ticker</th><td>BIG</td></tr>
-              <tr><th scope="row">Max Supply</th><td>84,000,000 BIG</td></tr>
-              <tr><th scope="row">Block Time</th><td>2.5 minutes (target)</td></tr>
-              <tr><th scope="row">Initial Block Reward</th><td>50 BIG</td></tr>
-              <tr><th scope="row">Halving Interval</th><td>Every 840,000 blocks (~4 years)</td></tr>
-              <tr><th scope="row">Premine</th><td>&le; 1%</td></tr>
-              <tr><th scope="row">Algorithm</th><td>Scrypt (Proof-of-Work)</td></tr>
-              <tr><th scope="row">Address Prefix</th><td>B</td></tr>
-              <tr><th scope="row">P2P Port</th><td>9444</td></tr>
-            </tbody>
-          </table>
-        </div>
+    <!-- ============ LIVE (honest status) ============ -->
+    <section class="facts facts--alt" id="live">
+      <div class="facts__head">
+        <h2>Honest status</h2>
+        <p>What is actually true right now — nothing more.</p>
       </div>
+      <dl class="ledger">
+        <div class="ledger__row"><dt>Network</dt><dd>Pre-mainnet. Testnet &amp; regtest only. <span class="muted">No coins have market value.</span></dd></div>
+        <div class="ledger__row"><dt>Emission &amp; treasury</dt><dd>Implemented, unit-tested and regtest-proven in consensus.</dd></div>
+        <div class="ledger__row"><dt>Browser mining</dt><dd>Not live yet — the RandomX/WASM path is in development.</dd></div>
+        <div class="ledger__row"><dt>Privacy</dt><dd>This site loads no trackers, no analytics, no third-party scripts.</dd></div>
+      </dl>
     </section>
 
-    <!-- ============ MINING ============ -->
-    <section class="section" id="mining">
-      <div class="wrap">
-        <div class="section__head reveal">
-          <h2>How to mine BigCoin</h2>
-          <p class="section__lead">Three steps to point hash power at the network. No permission required.</p>
-        </div>
-
-        <div class="grid grid--3 steps">
-          <article class="step reveal">
-            <span class="step__num">1</span>
-            <h3>Download the wallet / node</h3>
-            <p>Install BigCoin Core (Qt) or run the headless daemon to hold a copy of the chain and receive your rewards.</p>
-          </article>
-          <article class="step reveal">
-            <span class="step__num">2</span>
-            <h3>Get a Scrypt miner or join a pool</h3>
-            <p>Use a Scrypt-capable miner such as cpuminer or a GPU miner. Solo mine, or join a pool to smooth out payouts.</p>
-          </article>
-          <article class="step reveal">
-            <span class="step__num">3</span>
-            <h3>Point it at the network</h3>
-            <p>Aim your miner at your local node's RPC or a pool's stratum endpoint using a BigCoin address (starts with “B”).</p>
-          </article>
-        </div>
-
-        <div class="code reveal" aria-label="Example mining command">
-          <div class="code__bar">
-            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-            <span class="code__title">terminal — solo mine against a local node</span>
-          </div>
-<pre><code><span class="c-cmt"># 1. Start the BigCoin daemon and let it sync</span>
-bigcoind -daemon -server -rpcuser=big -rpcpassword=changeme
-
-<span class="c-cmt"># 2. Create a receiving address for your rewards</span>
-bigcoin-cli getnewaddress "mining"
-<span class="c-out">B1qMinerAddrExampleDoNotUse00000000</span>
-
-<span class="c-cmt"># 3. Point a Scrypt miner at the node (example: cpuminer)</span>
-minerd --algo scrypt \
-  --url http://127.0.0.1:9332 \
-  --user big --pass changeme \
-  --coinbase-addr B1qMinerAddrExampleDoNotUse00000000</code></pre>
-        </div>
-        <p class="disclaimer-inline reveal">Commands are illustrative. Always verify software signatures and use a password you generate yourself before running anything.</p>
-      </div>
-    </section>
-
-    <!-- ============ ROADMAP ============ -->
-    <section class="section section--alt" id="roadmap">
-      <div class="wrap">
-        <div class="section__head reveal">
-          <h2>Roadmap</h2>
-          <p class="section__lead">A deliberate, security-first path. Steps ship when they're ready — not before.</p>
-        </div>
-
-        <ol class="timeline">
-          <li class="tl reveal tl--active">
-            <span class="tl__dot"></span>
-            <div class="tl__body">
-              <span class="tl__tag tl__tag--progress">In progress</span>
-              <h3>Testnet</h3>
-              <p>A public test network for validating consensus rules, difficulty retargeting, and wallet behaviour with valueless coins.</p>
-            </div>
-          </li>
-          <li class="tl reveal">
-            <span class="tl__dot"></span>
-            <div class="tl__body">
-              <span class="tl__tag">Planned</span>
-              <h3>Security Audit</h3>
-              <p>Independent review of consensus changes and packaging before any value is at stake on mainnet.</p>
-            </div>
-          </li>
-          <li class="tl reveal">
-            <span class="tl__dot"></span>
-            <div class="tl__body">
-              <span class="tl__tag">Planned</span>
-              <h3>Mainnet Launch</h3>
-              <p>Genesis block and public release of BigCoin Core, opening fair mining to everyone.</p>
-            </div>
-          </li>
-          <li class="tl reveal">
-            <span class="tl__dot"></span>
-            <div class="tl__body">
-              <span class="tl__tag">Planned</span>
-              <h3>Block Explorer</h3>
-              <p>A public explorer to inspect blocks, transactions, and addresses in real time.</p>
-            </div>
-          </li>
-          <li class="tl reveal">
-            <span class="tl__dot"></span>
-            <div class="tl__body">
-              <span class="tl__tag">Planned</span>
-              <h3>Exchange Listings</h3>
-              <p>Community-driven liquidity starting with decentralized exchanges (DEX), followed by centralized exchanges (CEX) as adoption grows.</p>
-            </div>
-          </li>
-        </ol>
-      </div>
+    <!-- ============ PROVENANCE (three doors) ============ -->
+    <section class="provenance" id="provenance">
+      <h2 class="provenance__title">Provenance</h2>
+      <a class="door" href="https://github.com/zaptapagency/big-coin/blob/main/docs/ADR-006-founder-allocation.md">
+        <span class="door__name">The Burn</span>
+        <span class="door__desc">Why there is no price-gated unlock, and why any founder coins are burned, not held.</span>
+        <span class="door__go">→</span>
+      </a>
+      <a class="door" href="https://github.com/zaptapagency/big-coin/blob/main/docs/ADR-007-long-term-sustainability.md">
+        <span class="door__name">Ledger of Restraint</span>
+        <span class="door__desc">The 14-year economic constitution: dual miner revenue, no fee burn, sunsetting treasury.</span>
+        <span class="door__go">→</span>
+      </a>
+      <a class="door" href="https://github.com/zaptapagency/big-coin/blob/main/docs/ADR-005-treasury.md">
+        <span class="door__name">No Throne</span>
+        <span class="door__desc">The treasury that ends, and the params no one can quietly amend.</span>
+        <span class="door__go">→</span>
+      </a>
     </section>
 
     <!-- ============ WALLET ============ -->
-    <section class="section" id="wallet">
-      <div class="wrap">
-        <div class="section__head reveal">
-          <h2>Get the BigCoin Core wallet</h2>
-          <p class="section__lead">The official desktop wallet (BigCoin Core Qt) is a full node — it verifies the chain for you and keeps your keys on your own machine.</p>
-        </div>
-
-        <div class="downloads reveal">
-          <a href="#" class="dl" aria-label="Download for Windows">
-            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M3 5.5l7.5-1v7.5H3zM11.5 4.3L21 3v9h-9.5zM3 13.5h7.5V21L3 19.7zM11.5 13.5H21V21l-9.5-1.3z" fill="currentColor"/></svg>
-            <span class="dl__os">Windows</span>
-            <span class="dl__meta">BigCoin Core Qt · .exe</span>
-          </a>
-          <a href="#" class="dl" aria-label="Download for macOS">
-            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8s-1.8-.8-3-.8c-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 3 2.3 1.2-.05 1.6-.8 3-.8s1.8.8 3 .75c1.2-.02 2-1.1 2.8-2.2.9-1.3 1.2-2.5 1.3-2.6-.03-.01-2.4-.9-2.4-3.7zM14.2 5.7c.6-.8 1.1-1.9 1-3-.9.04-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .08 2-.5 2.7-1.3z" fill="currentColor"/></svg>
-            <span class="dl__os">macOS</span>
-            <span class="dl__meta">BigCoin Core Qt · .dmg</span>
-          </a>
-          <a href="#" class="dl" aria-label="Download for Linux">
-            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 2c-2 0-3 1.8-3 4 0 1.5.4 2.4.4 3.4 0 1.1-1.6 2.6-2.4 4.6-.8 2-.4 4 .2 5 .5.8-.4 1.5-.2 2.2.2.7 1.3.6 2.2.3.8-.3 1.6-.3 2.4-.3s1.6 0 2.4.3c.9.3 2 .4 2.2-.3.2-.7-.7-1.4-.2-2.2.6-1 1-3 .2-5-.8-2-2.4-3.5-2.4-4.6 0-1 .4-1.9.4-3.4 0-2.2-1-4-3-4z" fill="currentColor"/></svg>
-            <span class="dl__os">Linux</span>
-            <span class="dl__meta">BigCoin Core Qt · .tar.gz</span>
-          </a>
-        </div>
-        <p class="disclaimer-inline reveal">Downloads are placeholders pending mainnet. When released, always verify checksums and PGP signatures before installing.</p>
+    <section class="facts" id="wallet">
+      <div class="facts__head">
+        <h2>Your keys, your coins</h2>
+        <p>MoonBite Core is a full node that verifies the chain for you and keeps your keys on your own machine. Builds ship when mainnet is ready — not before.</p>
       </div>
+      <p class="muted" style="text-align:center">Desktop &amp; mobile wallet builds pending mainnet. When released, always verify checksums and signatures first.</p>
     </section>
   </main>
 
   <!-- ============ FOOTER ============ -->
   <footer class="footer">
-    <div class="wrap footer__inner">
-      <div class="footer__brand">
-        <a href="#top" class="brand">
-          <svg class="brand__hex" viewBox="0 0 32 32" width="24" height="24" aria-hidden="true">
-            <path d="M16 2l12 7v14l-12 7L4 23V9z" fill="none" stroke="#f5a623" stroke-width="2"/>
-          </svg>
-          <span class="brand__name">BigCoin</span>
-        </a>
-        <p class="footer__tag">An open, mineable, community cryptocurrency.</p>
-      </div>
-
-      <nav class="footer__cols" aria-label="Footer">
-        <div class="footer__col">
-          <h4>Project</h4>
-          <a href="#features">Features</a>
-          <a href="#tokenomics">Tokenomics</a>
-          <a href="#roadmap">Roadmap</a>
-        </div>
-        <div class="footer__col">
-          <h4>Participate</h4>
-          <a href="#mining">Mining</a>
-          <a href="#wallet">Wallet</a>
-          <a href="#top">Run a Node</a>
-        </div>
-        <div class="footer__col">
-          <h4>Community</h4>
-          <a href="#">Source Code</a>
-          <a href="#">Discussion</a>
-          <a href="#">Documentation</a>
-        </div>
-      </nav>
-    </div>
-
-    <div class="wrap disclaimer">
-      <p><strong>Disclaimer:</strong> BigCoin is an experimental, community cryptocurrency. It is not an investment or security. Nothing here is financial advice. Cryptocurrency involves risk; only participate with what you can afford to lose. Verify all software before use.</p>
-    </div>
-
-    <div class="wrap footer__bottom">
-      <p>&copy; <span id="year">2026</span> BigCoin. Open source. No warranties.</p>
-      <p class="footer__ticker">BIG · Scrypt PoW · 2.5 min blocks</p>
-    </div>
+    <p class="footer__line">Pre-mainnet · testnet &amp; regtest only · no trackers on this site</p>
+    <p class="footer__meta">&copy; <span id="year">2026</span> MoonBite · open source · no warranties · not an investment or security</p>
   </footer>
 
   <script src="js/main.js"></script>
