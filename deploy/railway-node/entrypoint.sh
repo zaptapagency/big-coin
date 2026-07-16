@@ -68,12 +68,35 @@ if [[ "${MINE:-0}" == "1" ]]; then
       echo "Mining to new wallet address: $ADDR"
     fi
 
+    # Auto-stop after MINE_BLOCKS blocks (default 20) so a test run cannot
+    # drain Railway credit. Set MINE_BLOCKS=0 to mine indefinitely.
+    TARGET="${MINE_BLOCKS:-20}"
+    HEIGHT=$(bigcoin-cli -datadir="$DATADIR" -rpcport=9445 \
+      -rpcuser="$BIGCOIN_RPC_USER" -rpcpassword="$BIGCOIN_RPC_PASSWORD" \
+      getblockcount 2>/dev/null || echo 0)
+    STOP_AT=$(( HEIGHT + TARGET ))
+    echo "Mining test: current height $HEIGHT, will mine to $STOP_AT then stop."
+
     # Slow, steady mining loop (1 block attempt every few seconds) so we don't
     # peg the container CPU. RandomX is CPU-heavy; keep the batch small.
     while kill -0 "$NODE_PID" 2>/dev/null; do
       bigcoin-cli -datadir="$DATADIR" -rpcport=9445 \
         -rpcuser="$BIGCOIN_RPC_USER" -rpcpassword="$BIGCOIN_RPC_PASSWORD" \
         generatetoaddress 1 "$ADDR" >/dev/null 2>&1 || true
+
+      if [[ "$TARGET" != "0" ]]; then
+        HEIGHT=$(bigcoin-cli -datadir="$DATADIR" -rpcport=9445 \
+          -rpcuser="$BIGCOIN_RPC_USER" -rpcpassword="$BIGCOIN_RPC_PASSWORD" \
+          getblockcount 2>/dev/null || echo "$HEIGHT")
+        if (( HEIGHT >= STOP_AT )); then
+          echo "=========================================================="
+          echo " TEST COMPLETE: mined $TARGET blocks, height is now $HEIGHT."
+          echo " Mining stopped to save credit. Node still running (idle)."
+          echo " Pause this Railway service now to stop all spending."
+          echo "=========================================================="
+          break
+        fi
+      fi
       sleep 5
     done
   ) &
