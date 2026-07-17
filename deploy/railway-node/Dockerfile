@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libfmt8 \
         libsqlite3-0 \
         libssl3 \
+        libzmq5 \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
