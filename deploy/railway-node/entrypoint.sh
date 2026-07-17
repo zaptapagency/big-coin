@@ -57,15 +57,35 @@ if [[ "${MINE:-0}" == "1" ]]; then
       sleep 2
     done
 
+    mcli() {
+      moonbite-cli -datadir="$DATADIR" -rpcport=9445 \
+        -rpcuser="$MOONBITE_RPC_USER" -rpcpassword="$MOONBITE_RPC_PASSWORD" "$@"
+    }
+
     ADDR="${MINE_ADDRESS:-}"
     if [[ -z "$ADDR" ]]; then
-      moonbite-cli -datadir="$DATADIR" -rpcport=9445 \
-        -rpcuser="$MOONBITE_RPC_USER" -rpcpassword="$MOONBITE_RPC_PASSWORD" \
-        createwallet miner >/dev/null 2>&1 || true
-      ADDR=$(moonbite-cli -datadir="$DATADIR" -rpcport=9445 \
-        -rpcuser="$MOONBITE_RPC_USER" -rpcpassword="$MOONBITE_RPC_PASSWORD" \
-        getnewaddress)
-      echo "Mining to new wallet address: $ADDR"
+      # First boot: create the "miner" wallet. On every later restart the wallet
+      # already exists on the /data volume but Core does NOT auto-load it, so
+      # createwallet fails and we must loadwallet instead. Try both (ignoring the
+      # "already exists / already loaded" errors) so the wallet is loaded in all
+      # three states: absent, present-unloaded, present-loaded.
+      mcli createwallet miner >/dev/null 2>&1 || true
+      mcli loadwallet miner   >/dev/null 2>&1 || true
+
+      # Do not start mining until we actually hold an address; a blank ADDR makes
+      # every generatetoaddress call fail silently and the chain never advances.
+      for _ in $(seq 1 15); do
+        ADDR=$(mcli getnewaddress 2>/dev/null || true)
+        [[ -n "$ADDR" ]] && break
+        mcli loadwallet miner >/dev/null 2>&1 || true
+        sleep 2
+      done
+      echo "Mining to new wallet address: ${ADDR:-<none: wallet load failed>}"
+    fi
+
+    if [[ -z "$ADDR" ]]; then
+      echo "Mining disabled: could not obtain a wallet address. Node stays up."
+      exit 0
     fi
 
     # Auto-stop after MINE_BLOCKS blocks (default 20) so a test run cannot
