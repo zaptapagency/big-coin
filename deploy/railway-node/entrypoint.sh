@@ -34,6 +34,14 @@ ARGS=(
   -rpcuser="$MOONBITE_RPC_USER"
   -rpcpassword="$MOONBITE_RPC_PASSWORD"
   -printtoconsole
+  # --- Memory caps so the container is not OOM-killed on small Railway plans. ---
+  # dbcache defaults to ~450MB; on a 512MB container that alone triggers SIGKILL
+  # ("Killed"). These keep the resident set well under ~256MB. Override any of
+  # them via Railway Variables (DBCACHE / MAXMEMPOOL / PAR / MAXCONNECTIONS).
+  -dbcache="${DBCACHE:-64}"
+  -maxmempool="${MAXMEMPOOL:-50}"
+  -par="${PAR:-1}"
+  -maxconnections="${MAXCONNECTIONS:-40}"
 )
 
 # Optional: advertise the public P2P address so peers can dial back in.
