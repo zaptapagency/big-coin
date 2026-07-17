@@ -98,6 +98,12 @@ def mining_page():
     return render_template("mining.html")
 
 
+@app.route("/explorer")
+def explorer_page():
+    """Render the block explorer page."""
+    return render_template("explorer.html")
+
+
 # ============================================================================= #
 # API Routes — Wallet
 # ============================================================================= #
@@ -347,6 +353,215 @@ def api_transactions():
                 "transactions": transactions[:20],  # Limit to 20 most recent
             }
         ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# ============================================================================= #
+# API Routes — Block Explorer
+# ============================================================================= #
+
+
+def _block_summary(chain, block_hash: str) -> dict:
+    """Build a compact summary dict for a block."""
+    block = chain.blocks[block_hash]
+    header = block.header
+    height = chain.heights[block_hash]
+    confirmations = chain.height - height + 1
+    return {
+        "height": height,
+        "hash": block_hash,
+        "confirmations": confirmations,
+        "timestamp": header.timestamp,
+        "tx_count": len(block.transactions),
+        "size": block.serialized_size(),
+        "nonce": header.nonce,
+        "bits": header.bits,
+        "prev_hash": header.prev_hash,
+        "merkle_root": header.merkle_root,
+    }
+
+
+def _tx_summary(tx) -> dict:
+    """Build a detailed summary dict for a transaction."""
+    outputs = []
+    total_out = 0
+    for out in tx.outputs:
+        total_out += out.amount
+        try:
+            address = address_from_pubkey_hash(out.pubkey_hash)
+        except Exception:
+            address = None
+        outputs.append(
+            {
+                "amount": out.amount,
+                "pubkey_hash": out.pubkey_hash,
+                "address": address,
+            }
+        )
+
+    inputs = []
+    for inp in tx.inputs:
+        inputs.append(
+            {
+                "prev_txid": inp.prev_txid,
+                "output_index": inp.output_index,
+            }
+        )
+
+    return {
+        "txid": tx.txid,
+        "is_coinbase": tx.is_coinbase(),
+        "input_count": len(tx.inputs),
+        "output_count": len(tx.outputs),
+        "total_out": total_out,
+        "inputs": inputs,
+        "outputs": outputs,
+    }
+
+
+@app.route("/api/explorer/blocks", methods=["GET"])
+def api_explorer_blocks():
+    """Return a paginated list of blocks, newest first."""
+    try:
+        node = get_node()
+        chain = node.chain
+
+        try:
+            limit = int(request.args.get("limit", 15))
+        except (TypeError, ValueError):
+            limit = 15
+        try:
+            offset = int(request.args.get("offset", 0))
+        except (TypeError, ValueError):
+            offset = 0
+
+        limit = max(1, min(limit, 50))
+        offset = max(0, offset)
+
+        active = chain.active_chain()  # genesis -> tip
+        newest_first = list(reversed(active))
+        page = newest_first[offset : offset + limit]
+
+        blocks = [_block_summary(chain, h) for h in page]
+
+        return jsonify(
+            {
+                "status": "success",
+                "blocks": blocks,
+                "total": len(active),
+                "offset": offset,
+                "limit": limit,
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/explorer/block/<identifier>", methods=["GET"])
+def api_explorer_block(identifier: str):
+    """Return a block by height or hash, including its transactions."""
+    try:
+        node = get_node()
+        chain = node.chain
+
+        block_hash = None
+        # Numeric identifier -> treat as height
+        if identifier.isdigit():
+            target_height = int(identifier)
+            for h in chain.active_chain():
+                if chain.heights[h] == target_height:
+                    block_hash = h
+                    break
+        elif identifier in chain.blocks:
+            block_hash = identifier
+
+        if block_hash is None:
+            return jsonify(
+                {"status": "error", "message": "Block not found"}
+            ), 404
+
+        summary = _block_summary(chain, block_hash)
+        block = chain.blocks[block_hash]
+        summary["transactions"] = [_tx_summary(tx) for tx in block.transactions]
+
+        return jsonify({"status": "success", "block": summary}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/explorer/tx/<txid>", methods=["GET"])
+def api_explorer_tx(txid: str):
+    """Return a transaction by txid from the active chain or mempool."""
+    try:
+        node = get_node()
+        chain = node.chain
+
+        # Search the active chain (newest first)
+        for block_hash in reversed(chain.active_chain()):
+            block = chain.blocks[block_hash]
+            for tx in block.transactions:
+                if tx.txid == txid:
+                    summary = _tx_summary(tx)
+                    summary["status"] = "confirmed"
+                    summary["block_hash"] = block_hash
+                    summary["block_height"] = chain.heights[block_hash]
+                    summary["confirmations"] = (
+                        chain.height - chain.heights[block_hash] + 1
+                    )
+                    return jsonify({"status": "success", "transaction": summary}), 200
+
+        # Search the mempool
+        if txid in chain.mempool:
+            summary = _tx_summary(chain.mempool[txid])
+            summary["status"] = "pending"
+            summary["confirmations"] = 0
+            return jsonify({"status": "success", "transaction": summary}), 200
+
+        return jsonify({"status": "error", "message": "Transaction not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/explorer/search", methods=["GET"])
+def api_explorer_search():
+    """Resolve a query to a block (by height/hash) or a transaction (by txid)."""
+    try:
+        node = get_node()
+        chain = node.chain
+        query = (request.args.get("q") or "").strip()
+
+        if not query:
+            return jsonify(
+                {"status": "error", "message": "Empty search query"}
+            ), 400
+
+        # Height
+        if query.isdigit():
+            target_height = int(query)
+            for h in chain.active_chain():
+                if chain.heights[h] == target_height:
+                    return jsonify(
+                        {"status": "success", "kind": "block", "id": str(target_height)}
+                    ), 200
+
+        # Block hash
+        if query in chain.blocks:
+            return jsonify({"status": "success", "kind": "block", "id": query}), 200
+
+        # Transaction (chain or mempool)
+        for block_hash in reversed(chain.active_chain()):
+            for tx in chain.blocks[block_hash].transactions:
+                if tx.txid == query:
+                    return jsonify(
+                        {"status": "success", "kind": "tx", "id": query}
+                    ), 200
+        if query in chain.mempool:
+            return jsonify({"status": "success", "kind": "tx", "id": query}), 200
+
+        return jsonify(
+            {"status": "error", "message": "No block or transaction matches that query"}
+        ), 404
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

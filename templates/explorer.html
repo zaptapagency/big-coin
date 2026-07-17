@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorer - MoonBite Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-orb">
+            <div class="loader-ring"></div>
+            <div class="loader-moon"></div>
+        </div>
+        <div class="loader-text">MoonBite</div>
+    </div>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <h1>🌙 MoonBite Dashboard</h1>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="/" class="nav-link">Dashboard</a></li>
+                <li><a href="/wallet" class="nav-link">Wallet</a></li>
+                <li><a href="/mining" class="nav-link">Mining</a></li>
+                <li><a href="/explorer" class="nav-link active">Explorer</a></li>
+            </ul>
+            <div class="theme-toggle">
+                <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="hero">
+                <h2>Block Explorer</h2>
+                <p>Browse the live chain — search by block height, block hash, or transaction ID.</p>
+            </section>
+
+            <!-- Search Bar -->
+            <div class="card card-full">
+                <div class="card-header">🔍 Search the Chain</div>
+                <div class="card-body">
+                    <form id="searchForm" class="mining-form">
+                        <div class="form-group">
+                            <label for="searchInput">Block height, block hash, or transaction ID</label>
+                            <input
+                                type="text"
+                                id="searchInput"
+                                class="form-input"
+                                placeholder="e.g. 0  or  a full 64-char hash..."
+                                autocomplete="off"
+                            >
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-large">🔎 Search</button>
+                            <button type="button" id="backBtn" class="btn btn-secondary btn-large hidden" onclick="showBrowse()">← Back to Blocks</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Chain Stats -->
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">Chain Height</div>
+                    <div class="card-body">
+                        <div id="statHeight" class="card-value">--</div>
+                        <div class="card-subtitle">Latest block</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Total Blocks</div>
+                    <div class="card-body">
+                        <div id="statBlocks" class="card-value">--</div>
+                        <div class="card-subtitle">Including genesis</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Mempool</div>
+                    <div class="card-body">
+                        <div id="statMempool" class="card-value">--</div>
+                        <div class="card-subtitle">Pending transactions</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latest Blocks (browse view) -->
+            <div id="browseView">
+                <div class="card card-full">
+                    <div class="card-header">Latest Blocks</div>
+                    <div class="card-body">
+                        <div id="blocksList" class="tx-list">
+                            <p>Loading blocks...</p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="loadMoreBtn" class="btn btn-secondary hidden" onclick="loadMoreBlocks()">Load More</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail view (block or tx) -->
+            <div id="detailView" class="hidden">
+                <div class="card card-full">
+                    <div class="card-header" id="detailTitle">Details</div>
+                    <div class="card-body" id="detailBody"></div>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessage" class="status-message hidden"></div>
+        </main>
+    </div>
+
+    <script>
+        // Reveal page + fade out loader once ready (with a safety fallback)
+        (function () {
+            function reveal() { document.body.classList.add('loaded'); }
+            window.addEventListener('load', function () { setTimeout(reveal, 300); });
+            setTimeout(reveal, 2000);
+        })();
+
+        // Initialize theme
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        const storedTheme = localStorage.getItem('theme');
+        const isDark = storedTheme === 'dark' || (prefersDark && !storedTheme);
+        htmlElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+
+        let currentOffset = 0;
+        const PAGE_SIZE = 15;
+
+        function showStatus(message, type = 'info') {
+            const el = document.getElementById('statusMessage');
+            el.textContent = message;
+            el.className = `status-message ${type}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function shortHash(h) {
+            if (!h) return '--';
+            return h.length > 20 ? `${h.substring(0, 10)}…${h.substring(h.length - 8)}` : h;
+        }
+
+        function fmtCoins(sats) {
+            const coins = Math.floor(sats / 100);
+            return `${coins.toLocaleString()} MBITE`;
+        }
+
+        function fmtTime(ts) {
+            try { return new Date(ts * 1000).toLocaleString(); }
+            catch (e) { return ts; }
+        }
+
+        // ---- Chain stats ----
+        async function loadStats() {
+            try {
+                const r = await fetch('/api/blockchain/info');
+                const d = await r.json();
+                if (d.status === 'success') {
+                    document.getElementById('statHeight').textContent = d.height;
+                    document.getElementById('statMempool').textContent = d.mempool_size;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // ---- Browse: latest blocks ----
+        async function loadBlocks(reset = true) {
+            if (reset) { currentOffset = 0; }
+            try {
+                const r = await fetch(`/api/explorer/blocks?limit=${PAGE_SIZE}&offset=${currentOffset}`);
+                const d = await r.json();
+                if (d.status !== 'success') { showStatus(d.message || 'Failed to load blocks', 'error'); return; }
+
+                document.getElementById('statBlocks').textContent = d.total;
+
+                const rows = d.blocks.map(b => `
+                    <div class="tx-item block-row" onclick="openBlock('${b.height}')">
+                        <div class="tx-info">
+                            <div class="tx-id"><strong>#${b.height}</strong> &nbsp; <code>${esc(shortHash(b.hash))}</code></div>
+                            <div class="tx-meta">
+                                <span class="tx-status confirmed">${b.confirmations} conf</span>
+                                <span class="tx-detail">${b.tx_count} tx · ${b.size} bytes · nonce ${b.nonce}</span>
+                            </div>
+                        </div>
+                        <div class="tx-detail">${esc(fmtTime(b.timestamp))}</div>
+                    </div>
+                `).join('');
+
+                const list = document.getElementById('blocksList');
+                if (reset) { list.innerHTML = rows || '<p>No blocks yet.</p>'; }
+                else { list.insertAdjacentHTML('beforeend', rows); }
+
+                currentOffset += d.blocks.length;
+                const more = document.getElementById('loadMoreBtn');
+                more.classList.toggle('hidden', currentOffset >= d.total);
+            } catch (e) {
+                console.error(e);
+                showStatus('Network error loading blocks', 'error');
+            }
+        }
+
+        function loadMoreBlocks() { loadBlocks(false); }
+
+        function showBrowse() {
+            document.getElementById('browseView').classList.remove('hidden');
+            document.getElementById('detailView').classList.add('hidden');
+            document.getElementById('backBtn').classList.add('hidden');
+        }
+
+        function showDetail(title, html) {
+            document.getElementById('detailTitle').innerHTML = title;
+            document.getElementById('detailBody').innerHTML = html;
+            document.getElementById('browseView').classList.add('hidden');
+            document.getElementById('detailView').classList.remove('hidden');
+            document.getElementById('backBtn').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function kv(label, value, mono = false) {
+            return `<div class="stat">
+                <div class="stat-label">${esc(label)}</div>
+                <div class="stat-value ${mono ? 'monospace' : ''}">${value}</div>
+            </div>`;
+        }
+
+        function renderTx(tx) {
+            const ins = tx.inputs.map(i => i.prev_txid === '0'.repeat(64)
+                ? `<div class="tx-detail">🪙 Coinbase (newly minted)</div>`
+                : `<div class="tx-detail monospace">${esc(shortHash(i.prev_txid))}:${i.output_index}</div>`
+            ).join('');
+            const outs = tx.outputs.map(o => `
+                <div class="tx-detail">
+                    <span class="monospace">${esc(o.address || shortHash(o.pubkey_hash))}</span>
+                    &nbsp;→&nbsp; <strong>${fmtCoins(o.amount)}</strong>
+                </div>
+            `).join('');
+            return `
+                <div class="tx-item" style="cursor:pointer" onclick="openTx('${tx.txid}')">
+                    <div class="tx-info">
+                        <div class="tx-id"><code>${esc(shortHash(tx.txid))}</code>
+                            ${tx.is_coinbase ? '<span class="tx-status confirmed">coinbase</span>' : ''}
+                        </div>
+                        <div class="tx-meta">
+                            <span class="tx-detail">${tx.input_count} in → ${tx.output_count} out</span>
+                            <span class="tx-detail">${fmtCoins(tx.total_out)}</span>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        async function openBlock(id) {
+            try {
+                const r = await fetch(`/api/explorer/block/${encodeURIComponent(id)}`);
+                const d = await r.json();
+                if (d.status !== 'success') { showStatus(d.message || 'Block not found', 'error'); return; }
+                const b = d.block;
+                const meta = `<div class="mining-stats">
+                    ${kv('Height', b.height)}
+                    ${kv('Confirmations', b.confirmations)}
+                    ${kv('Transactions', b.tx_count)}
+                    ${kv('Size', b.size + ' bytes')}
+                    ${kv('Timestamp', esc(fmtTime(b.timestamp)))}
+                    ${kv('Nonce', b.nonce)}
+                    ${kv('Bits', b.bits)}
+                    ${kv('Hash', esc(b.hash), true)}
+                    ${kv('Prev Hash', esc(b.prev_hash), true)}
+                    ${kv('Merkle Root', esc(b.merkle_root), true)}
+                </div>`;
+                const txs = `<div class="card-header" style="margin-top:1.25rem">Transactions (${b.transactions.length})</div>
+                    <div class="tx-list">${b.transactions.map(renderTx).join('')}</div>`;
+                showDetail(`Block #${b.height}`, meta + txs);
+            } catch (e) {
+                console.error(e);
+                showStatus('Network error loading block', 'error');
+            }
+        }
+
+        async function openTx(txid) {
+            try {
+                const r = await fetch(`/api/explorer/tx/${encodeURIComponent(txid)}`);
+                const d = await r.json();
+                if (d.status !== 'success') { showStatus(d.message || 'Transaction not found', 'error'); return; }
+                const t = d.transaction;
+                const meta = `<div class="mining-stats">
+                    ${kv('Status', t.status)}
+                    ${kv('Confirmations', t.confirmations)}
+                    ${kv('Coinbase', t.is_coinbase ? 'Yes' : 'No')}
+                    ${kv('Total Out', fmtCoins(t.total_out))}
+                    ${t.block_height !== undefined ? kv('In Block', '#' + t.block_height) : ''}
+                    ${kv('TXID', esc(t.txid), true)}
+                </div>`;
+                const ins = t.inputs.map(i => i.prev_txid === '0'.repeat(64)
+                    ? `<div class="tx-item"><div class="tx-detail">🪙 Coinbase (newly minted)</div></div>`
+                    : `<div class="tx-item"><div class="tx-detail monospace">${esc(shortHash(i.prev_txid))}:${i.output_index}</div></div>`
+                ).join('');
+                const outs = t.outputs.map(o => `
+                    <div class="tx-item">
+                        <div class="tx-info">
+                            <div class="tx-id monospace">${esc(o.address || shortHash(o.pubkey_hash))}</div>
+                            <div class="tx-meta"><span class="tx-detail">${fmtCoins(o.amount)}</span></div>
+                        </div>
+                    </div>`).join('');
+                const body = meta +
+                    `<div class="card-header" style="margin-top:1.25rem">Inputs (${t.input_count})</div><div class="tx-list">${ins}</div>` +
+                    `<div class="card-header" style="margin-top:1.25rem">Outputs (${t.output_count})</div><div class="tx-list">${outs}</div>`;
+                showDetail('Transaction', body);
+            } catch (e) {
+                console.error(e);
+                showStatus('Network error loading transaction', 'error');
+            }
+        }
+
+        // ---- Search ----
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const q = document.getElementById('searchInput').value.trim();
+            if (!q) { showStatus('Enter a height, hash, or txid', 'error'); return; }
+            try {
+                const r = await fetch(`/api/explorer/search?q=${encodeURIComponent(q)}`);
+                const d = await r.json();
+                if (d.status !== 'success') { showStatus(d.message || 'Nothing found', 'error'); return; }
+                if (d.kind === 'block') { openBlock(d.id); }
+                else if (d.kind === 'tx') { openTx(d.id); }
+            } catch (err) {
+                console.error(err);
+                showStatus('Network error during search', 'error');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadBlocks(true);
+            setInterval(() => {
+                loadStats();
+                if (!document.getElementById('detailView').classList.contains('hidden')) return;
+                loadBlocks(true);
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
