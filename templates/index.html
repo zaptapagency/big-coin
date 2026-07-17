@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoonBite Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-orb">
+            <div class="loader-ring"></div>
+            <div class="loader-moon"></div>
+        </div>
+        <div class="loader-text">MoonBite</div>
+    </div>
     <div class="container">
         <!-- Navigation Bar -->
         <nav class="navbar">
@@ -95,6 +103,13 @@
     </div>
 
     <script>
+        // Reveal page + fade out loader once ready (with a safety fallback)
+        (function () {
+            function reveal() { document.body.classList.add('loaded'); }
+            window.addEventListener('load', function () { setTimeout(reveal, 300); });
+            setTimeout(reveal, 2000);
+        })();
+
         // Initialize theme
         const htmlElement = document.documentElement;
         const themeToggle = document.getElementById('themeToggle');
