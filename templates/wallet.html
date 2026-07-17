@@ -155,10 +155,10 @@
         const themeToggle = document.getElementById('themeToggle');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        if (localStorage.getItem('theme') === 'dark' || (prefersDark && !localStorage.getItem('theme'))) {
-            htmlElement.setAttribute('data-theme', 'dark');
-            themeToggle.textContent = '☀️ Light Mode';
-        }
+        const storedTheme = localStorage.getItem('theme');
+        const isDark = storedTheme === 'dark' || (prefersDark && !storedTheme);
+        htmlElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 
         themeToggle.addEventListener('click', () => {
             const currentTheme = htmlElement.getAttribute('data-theme');

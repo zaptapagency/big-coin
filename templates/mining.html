@@ -76,6 +76,14 @@
             <div id="progressSection" class="card card-full hidden">
                 <div class="card-header">Mining Progress</div>
                 <div class="card-body">
+                    <div class="mining-orb-wrap">
+                        <div id="miningOrb" class="mining-orb idle">
+                            <div class="orb-ring"></div>
+                            <div class="orb-ring ring-2"></div>
+                            <div class="orb-core"></div>
+                        </div>
+                    </div>
+
                     <div class="progress-item">
                         <div class="progress-label">
                             <span>Blocks Mined</span>
@@ -155,10 +163,10 @@
         const themeToggle = document.getElementById('themeToggle');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        if (localStorage.getItem('theme') === 'dark' || (prefersDark && !localStorage.getItem('theme'))) {
-            htmlElement.setAttribute('data-theme', 'dark');
-            themeToggle.textContent = '☀️ Light Mode';
-        }
+        const storedTheme = localStorage.getItem('theme');
+        const isDark = storedTheme === 'dark' || (prefersDark && !storedTheme);
+        htmlElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 
         themeToggle.addEventListener('click', () => {
             const currentTheme = htmlElement.getAttribute('data-theme');
@@ -214,7 +222,7 @@
 
                 const data = await response.json();
 
-                if (response.ok && data.status === 'success') {
+                if (response.ok && data.status === 'mining') {
                     isMining = true;
                     startTime = Date.now();
                     document.getElementById('miningForm').style.display = 'none';
@@ -222,6 +230,7 @@
                     document.getElementById('startBtn').classList.add('hidden');
                     document.getElementById('stopBtn').classList.remove('hidden');
                     document.getElementById('totalBlocks').textContent = data.blocks_to_mine;
+                    document.getElementById('miningOrb').classList.remove('idle');
 
                     showStatus('✓ Mining started', 'success');
 
@@ -245,9 +254,9 @@
                 const response = await fetch('/api/mining/status');
                 const data = await response.json();
 
-                if (data.status === 'success') {
+                if (data.status !== 'error') {
                     const blocksMined = data.blocks_mined;
-                    const totalBlocks = data.blocks_to_mine;
+                    const totalBlocks = data.total_blocks;
                     const currentHeight = data.current_height;
 
                     // Update progress bar
@@ -266,7 +275,7 @@
                     document.getElementById('elapsedTime').textContent = timeStr;
 
                     // Check if mining is complete
-                    if (!data.is_mining || blocksMined >= totalBlocks) {
+                    if (data.status !== 'mining' || blocksMined >= totalBlocks) {
                         stopMiningUI();
                     } else {
                         document.getElementById('miningStatusDisplay').textContent = 'Mining...';
@@ -299,6 +308,7 @@
             }
 
             document.getElementById('miningStatusDisplay').textContent = 'Idle';
+            document.getElementById('miningOrb').classList.add('idle');
             document.getElementById('progressSection').classList.add('hidden');
             document.getElementById('miningForm').style.display = 'block';
             document.getElementById('startBtn').classList.remove('hidden');
