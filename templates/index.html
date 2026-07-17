@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyCoin Dashboard</title>
+    <title>MoonBite Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -11,7 +11,7 @@
         <!-- Navigation Bar -->
         <nav class="navbar">
             <div class="navbar-brand">
-                <h1>⛓️ MyCoin Dashboard</h1>
+                <h1>🌙 MoonBite Dashboard</h1>
             </div>
             <ul class="navbar-nav">
                 <li><a href="/" class="nav-link active">Dashboard</a></li>
@@ -26,7 +26,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <section class="hero">
-                <h2>Welcome to MyCoin</h2>
+                <h2>Welcome to MoonBite</h2>
                 <p>An educational blockchain implementation. This network never holds real funds.</p>
             </section>
 
@@ -122,7 +122,7 @@
                 if (data.status === 'success') {
                     document.getElementById('chainHeight').textContent = data.height;
                     document.getElementById('totalMoney').textContent =
-                        `${data.total_money_coins} MC (${data.total_money_satoshis} satoshis)`;
+                        `${data.total_money_coins} MBITE (${data.total_money_satoshis} satoshis)`;
                     document.getElementById('txCount').textContent = data.tx_count;
                     document.getElementById('mempoolSize').textContent = data.mempool_size;
                     document.getElementById('tipHash').textContent = data.tip_hash;

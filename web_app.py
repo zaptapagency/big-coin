@@ -390,5 +390,5 @@ def add_cors_headers(response):
 if __name__ == "__main__":
     # Initialize the node on startup
     get_node()
-    print("MyCoin Dashboard starting on http://localhost:5000")
+    print("MoonBite Dashboard starting on http://localhost:5000")
     app.run(debug=True, host="localhost", port=5000)

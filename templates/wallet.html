@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet - MyCoin Dashboard</title>
+    <title>Wallet - MoonBite Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -11,7 +11,7 @@
         <!-- Navigation Bar -->
         <nav class="navbar">
             <div class="navbar-brand">
-                <h1>⛓️ MyCoin Dashboard</h1>
+                <h1>🌙 MoonBite Dashboard</h1>
             </div>
             <ul class="navbar-nav">
                 <li><a href="/" class="nav-link">Dashboard</a></li>
@@ -237,7 +237,7 @@
 
                 if (data.status === 'success') {
                     document.getElementById('balanceCoins').textContent =
-                        `${data.balance_coins} MC`;
+                        `${data.balance_coins} MBITE`;
                     document.getElementById('balanceSatoshis').textContent =
                         `${data.balance_satoshis} satoshis`;
                     document.getElementById('utxoCount').textContent =
@@ -327,7 +327,7 @@
                         <code class="address-value">${tx.txid.slice(0, 16)}...</code>
                     </div>
                     <div class="mempool-meta">
-                        Inputs: ${tx.inputs} | Outputs: ${tx.outputs} | Total: ${tx.total_out_cents / 100000000} MC
+                        Inputs: ${tx.inputs} | Outputs: ${tx.outputs} | Total: ${tx.total_out_cents / 100000000} MBITE
                     </div>
                 </div>
             `).join('');
