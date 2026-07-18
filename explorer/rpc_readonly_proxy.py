@@ -31,6 +31,10 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 # The only methods the explorer needs. Everything else is refused.
+# All are read-only: block/tx/chain queries plus the address-page helpers
+# (scantxoutset for UTXO lookup, validateaddress, estimatesmartfee,
+# decoderawtransaction). Wallet, spend, mining and admin methods are NOT here,
+# so sendrawtransaction / generatetoaddress / getbalance etc. are rejected.
 ALLOWED_METHODS = frozenset({
     "getblockcount",
     "getblockhash",
@@ -43,6 +47,10 @@ ALLOWED_METHODS = frozenset({
     "getnetworkinfo",
     "getbestblockhash",
     "uptime",
+    "scantxoutset",
+    "validateaddress",
+    "estimatesmartfee",
+    "decoderawtransaction",
 })
 
 PROXY_BIND = os.environ.get("PROXY_BIND", "127.0.0.1")
