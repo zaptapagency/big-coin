@@ -1,0 +1,4 @@
+# SQLite webhook store (runtime state — never commit)
+webhooks.db
+webhooks.db-shm
+webhooks.db-wal

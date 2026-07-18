@@ -9,11 +9,16 @@ import datetime
 from flask import Flask, abort, redirect, render_template, request, url_for
 
 import config
+import webhooks
 from api import api as api_blueprint
 from rpc import RpcClient, RPCConnectionError, RPCError
 
 app = Flask(__name__)
 app.register_blueprint(api_blueprint)
+
+# Start the background webhook poller (single instance across gunicorn workers
+# via a SQLite lock). No-op when webhooks are disabled.
+webhooks.start_poller()
 
 
 # --- Jinja filters -------------------------------------------------------
