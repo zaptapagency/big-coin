@@ -19,6 +19,11 @@ RPC_PORT = int(os.environ.get("BIGCOIN_RPC_PORT", "9445"))
 RPC_USER = os.environ.get("BIGCOIN_RPC_USER", "")
 RPC_PASSWORD = os.environ.get("BIGCOIN_RPC_PASSWORD", "")
 
+# Full RPC URL override. When set (e.g. an HTTPS Cloudflare-tunnel host that
+# fronts the read-only proxy), it takes precedence over HOST/PORT so the
+# explorer can reach a remote node over https without editing code.
+RPC_URL = os.environ.get("BIGCOIN_RPC_URL", "")
+
 # Timeout (seconds) for RPC HTTP calls.
 RPC_TIMEOUT = float(os.environ.get("BIGCOIN_RPC_TIMEOUT", "8"))
 
@@ -81,4 +86,4 @@ WEBHOOK_ALLOW_PRIVATE = _env_bool("WEBHOOK_ALLOW_PRIVATE", default=False)
 
 
 def rpc_url() -> str:
-    return f"http://{RPC_HOST}:{RPC_PORT}/"
+    return RPC_URL if RPC_URL else f"http://{RPC_HOST}:{RPC_PORT}/"
